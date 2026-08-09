@@ -1,0 +1,86 @@
+model TipeKamar {
+  id             String          @id @default(uuid())
+  propertiId     String
+  nama           String
+  deskripsi      String?         @db.Text
+  hargaDasar     Decimal         @db.Decimal(12, 2)
+  maksDewasa     Int
+  maksAnak       Int
+  maksTamu       Int
+  ukuranKamar    Int?
+  totalUnit      Int             @default(0)
+  status         StatusTipeKamar @default(AKTIF)
+  dibuatPada     DateTime        @default(now())
+  diperbaruiPada DateTime        @updatedAt
+
+  properti   Properti             @relation(fields: [propertiId], references: [id], onDelete: Cascade)
+  foto       FotoTipeKamar[]
+  fasilitas  FasilitasTipeKamar[]
+  kasur      KasurTipeKamar[]
+  paketHarga PaketHarga[]
+  unit       UnitKamar[]
+  pemesanan  Pemesanan[]
+}
+
+model FotoTipeKamar {
+  id          String  @id @default(uuid())
+  tipeKamarId String
+  url         String
+  isUtama     Boolean @default(false)
+
+  tipeKamar TipeKamar @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
+}
+
+model FasilitasTipeKamar {
+  tipeKamarId String
+  fasilitasId String
+
+  tipeKamar TipeKamar @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
+  fasilitas Fasilitas @relation(fields: [fasilitasId], references: [id], onDelete: Cascade)
+
+  @@id([tipeKamarId, fasilitasId])
+}
+
+model TipeKasur {
+  id        String           @id @default(uuid())
+  nama      String
+  deskripsi String?
+  tipeKamar KasurTipeKamar[]
+}
+
+model KasurTipeKamar {
+  id          String @id @default(uuid())
+  tipeKamarId String
+  tipeKasurId String
+  jumlah      Int    @default(1)
+
+  tipeKamar TipeKamar @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
+  tipeKasur TipeKasur @relation(fields: [tipeKasurId], references: [id], onDelete: Cascade)
+}
+
+model PaketHarga {
+  id                  String           @id @default(uuid())
+  tipeKamarId         String
+  nama                String
+  deskripsi           String?          @db.Text
+  harga               Decimal          @db.Decimal(12, 2)
+  termasukSarapan     Boolean          @default(false)
+  dapatDikembalikan   Boolean          @default(true)
+  kebijakanPembatalan String?          @db.Text
+  status              StatusPaketHarga @default(AKTIF)
+  dibuatPada          DateTime         @default(now())
+  diperbaruiPada      DateTime         @updatedAt
+
+  tipeKamar TipeKamar   @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
+  pemesanan Pemesanan[]
+}
+
+enum StatusTipeKamar {
+  AKTIF
+  NONAKTIF
+}
+
+enum StatusPaketHarga {
+  AKTIF
+  NONAKTIF
+}

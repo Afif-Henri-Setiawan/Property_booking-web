@@ -1,0 +1,75 @@
+model Properti {
+  id             String         @id @default(uuid())
+  tuanRumahId    String
+  tipePropertiId String
+  nama           String
+  deskripsi      String         @db.Text
+  alamat         String
+  kota           String
+  provinsi       String
+  negara         String
+  garisLintang   Float?
+  garisBujur     Float?
+  waktuCheckIn   String?
+  waktuCheckOut  String?
+  nomorIdentitasHost  String?
+  urlDokumenIdentitas String?
+  urlBuktiKepemilikan String?
+  urlDokumenIzinUsaha String?
+  status         StatusProperti @default(DRAFT)
+  dibuatPada     DateTime       @default(now())
+  diperbaruiPada DateTime       @updatedAt
+
+  tuanRumah Pengguna            @relation(fields: [tuanRumahId], references: [id], onDelete: Cascade)
+  tipe      TipeProperti        @relation(fields: [tipePropertiId], references: [id])
+  foto      FotoProperti[]
+  fasilitas FasilitasProperti[]
+  tipeKamar TipeKamar[]
+  ulasan    Ulasan[]
+  pemesanan Pemesanan[]
+}
+
+model TipeProperti {
+  id        String     @id @default(uuid())
+  nama      String
+  slug      String     @unique
+  deskripsi String?
+  properti  Properti[]
+}
+
+model Fasilitas {
+  id        String               @id @default(uuid())
+  nama      String
+  ikon      String?
+  properti  FasilitasProperti[]
+  tipeKamar FasilitasTipeKamar[]
+}
+
+model FasilitasProperti {
+  propertiId  String
+  fasilitasId String
+
+  properti  Properti  @relation(fields: [propertiId], references: [id], onDelete: Cascade)
+  fasilitas Fasilitas @relation(fields: [fasilitasId], references: [id], onDelete: Cascade)
+
+  @@id([propertiId, fasilitasId])
+}
+
+model FotoProperti {
+  id         String   @id @default(uuid())
+  propertiId String
+  url        String
+  isUtama    Boolean  @default(false)
+  dibuatPada DateTime @default(now())
+
+  properti Properti @relation(fields: [propertiId], references: [id], onDelete: Cascade)
+}
+
+enum StatusProperti {
+  DRAFT
+  TERTUNDA
+  DITERBITKAN
+  DITOLAK
+  NONAKTIF
+  DITANGGUHKAN
+}

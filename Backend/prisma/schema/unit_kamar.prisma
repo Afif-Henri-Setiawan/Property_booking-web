@@ -1,0 +1,38 @@
+model UnitKamar {
+  id             String     @id @default(uuid())
+  tipeKamarId    String
+  nomorUnit      String
+  lantai         String?
+  status         StatusUnit @default(TERSEDIA)
+  dibuatPada     DateTime   @default(now())
+  diperbaruiPada DateTime   @updatedAt
+
+  tipeKamar TipeKamar            @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
+  blokir    BlokirKetersediaan[]
+  pemesanan Pemesanan[]
+  checkIn   CheckIn[]
+}
+
+model BlokirKetersediaan {
+  id             String       @id @default(uuid())
+  unitKamarId    String
+  tanggalMulai   DateTime
+  tanggalSelesai DateTime
+  alasan         String?
+  status         StatusBlokir @default(AKTIF)
+  dibuatPada     DateTime     @default(now())
+
+  unitKamar UnitKamar @relation(fields: [unitKamarId], references: [id], onDelete: Cascade)
+}
+
+enum StatusUnit {
+  TERSEDIA
+  TERISI
+  PERAWATAN
+  NONAKTIF
+}
+
+enum StatusBlokir {
+  AKTIF
+  NONAKTIF
+}

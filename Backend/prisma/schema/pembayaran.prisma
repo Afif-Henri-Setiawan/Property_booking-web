@@ -1,0 +1,16 @@
+model Pembayaran {
+  id                  String    @id @default(uuid())
+  pemesananId         String    @unique
+  orderIdMidtrans     String?   @unique
+  transaksiIdMidtrans String?   @unique
+  referensiPembayaran String?
+  jumlah              Decimal   @db.Decimal(12, 2)
+  metodePembayaran    String?
+  statusTransaksi     String?
+  statusPenipuan      String?
+  dibayarPada         DateTime?
+  dibuatPada          DateTime  @default(now())
+  diperbaruiPada      DateTime  @updatedAt
+
+  pemesanan Pemesanan @relation(fields: [pemesananId], references: [id], onDelete: Cascade)
+}

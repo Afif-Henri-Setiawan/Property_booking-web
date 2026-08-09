@@ -1,0 +1,19 @@
+model Pengguna {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  nama           String
+  kataSandi      String
+  peran          Peran    @default(TAMU)
+  dibuatPada     DateTime @default(now())
+  diperbaruiPada DateTime @updatedAt
+
+  properti  Properti[]
+  pemesanan Pemesanan[]
+  ulasan    Ulasan[]
+}
+
+enum Peran {
+  TAMU
+  TUAN_RUMAH
+  ADMIN
+}

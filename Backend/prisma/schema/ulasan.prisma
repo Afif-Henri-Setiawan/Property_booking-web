@@ -1,0 +1,14 @@
+model Ulasan {
+  id             String   @id @default(uuid())
+  propertiId     String
+  penggunaId     String
+  pemesananId    String   @unique
+  penilaian      Int      @db.SmallInt
+  komentar       String?  @db.Text
+  dibuatPada     DateTime @default(now())
+  diperbaruiPada DateTime @updatedAt
+
+  properti  Properti  @relation(fields: [propertiId], references: [id], onDelete: Cascade)
+  pengguna  Pengguna  @relation(fields: [penggunaId], references: [id], onDelete: Cascade)
+  pemesanan Pemesanan @relation(fields: [pemesananId], references: [id], onDelete: Cascade)
+}
