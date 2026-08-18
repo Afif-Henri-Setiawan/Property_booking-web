@@ -18,7 +18,7 @@ import { validate } from '../middlewares/validate';
 
 const router = Router();
 
-// Endpoint publik
+// Endpoint publik (Landing Page / Pencarian Umum)
 router.get('/', getPropertiPublik);
 router.get('/:id', getPropertiById);
 
@@ -28,8 +28,6 @@ router.patch('/:id/verifikasi', protect, authorize('ADMIN'), validate(verifyProp
 
 // Endpoint dilindungi
 router.use(protect);
-
-// Host bisa melihat propertinya sendiri
 router.get('/host/my-properties', authorize('TUAN_RUMAH', 'ADMIN'), getMyProperti);
 
 // Manajemen properti (Hanya Host / Admin)

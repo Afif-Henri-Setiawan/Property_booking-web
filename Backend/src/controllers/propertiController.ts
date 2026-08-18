@@ -75,6 +75,10 @@ export const getPropertiPublik = async (req: Request, res: Response, next: NextF
       include: {
         tipe: true,
         foto: { where: { isUtama: true } },
+        tipeKamar: {
+          take: 1,
+          orderBy: { hargaDasar: 'asc' }
+        }
       },
     });
     res.json({ status: 'success', data: properti });
@@ -94,6 +98,7 @@ export const getPropertiById = async (req: Request, res: Response, next: NextFun
         fasilitas: { include: { fasilitas: true } },
         foto: true,
         tuanRumah: { select: { id: true, nama: true, email: true } },
+        tipeKamar: true,
       },
     });
 

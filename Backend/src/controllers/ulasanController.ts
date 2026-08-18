@@ -87,3 +87,29 @@ export const getUlasanByProperti = async (req: Request, res: Response, next: Nex
     next(error);
   }
 };
+
+// Endpoint Publik: Mengambil 5 ulasan terbaik untuk Landing Page
+export const getUlasanTerbaik = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const ulasan = await prisma.ulasan.findMany({
+      where: { 
+        penilaian: { gte: 4 }, // Hanya ambil review bintang 4 ke atas
+      },
+      take: 5, // Ambil maksimal 5 review sebagai sampel
+      orderBy: { dibuatPada: 'desc' }, // Review terbaru
+      include: {
+        pengguna: {
+          select: { nama: true }
+        },
+        properti: {
+          select: { nama: true, kota: true, provinsi: true }
+        }
+      }
+    });
+
+    res.json({ status: 'success', data: ulasan });
+  } catch (error) {
+    logger.error({ err: error }, 'Error saat mengambil ulasan terbaik');
+    next(error);
+  }
+};
