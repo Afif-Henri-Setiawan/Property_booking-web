@@ -59,9 +59,9 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
       <main className="pt-28 px-4 md:px-16 max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+          <Link href="/" className="hover:text-primary transition-colors">Beranda</Link>
           <ChevronRight size={14} />
-          <Link href="#" className="hover:text-primary transition-colors">United States</Link>
+          <Link href="#" className="hover:text-primary transition-colors">Amerika Serikat</Link>
           <ChevronRight size={14} />
           <span className="text-primary font-medium truncate">{property.nama}</span>
         </div>
@@ -74,7 +74,7 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
               <div className="flex items-center gap-1 text-primary">
                 <Star size={16} className="fill-yellow-500 text-yellow-500" />
                 <span>4.96</span>
-                <span className="text-gray-500 underline cursor-pointer hover:text-primary">(128 reviews)</span>
+                <span className="text-gray-500 underline cursor-pointer hover:text-primary">(128 ulasan)</span>
               </div>
               <span className="text-gray-300">•</span>
               <div className="flex items-center gap-1 text-gray-600">
@@ -91,11 +91,11 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
           <div className="flex items-center gap-3">
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:bg-gray-50 text-sm font-medium transition-colors">
               <Share size={16} />
-              Share
+              Bagikan
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-sm font-medium transition-colors group">
               <Heart size={16} className="group-hover:fill-red-600" />
-              Save
+              Simpan
             </button>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
             ))}
           </div>
           <button className="absolute bottom-6 right-6 px-4 py-2 bg-white/90 backdrop-blur border border-gray-200 rounded-xl text-sm font-medium shadow-sm hover:bg-white flex items-center gap-2 transition-colors">
-            View all photos
+            Lihat semua foto
           </button>
         </div>
 
@@ -133,13 +133,13 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
             {/* Host Info & Quick Stats */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-8 border-b border-gray-200">
               <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-semibold text-primary">Entire villa hosted by {property.tuanRumah?.nama || 'Host'}</h2>
+                <h2 className="text-2xl font-semibold text-primary">Seluruh vila disewakan oleh {property.tuanRumah?.nama || 'Host'}</h2>
                 <div className="flex items-center gap-4 text-gray-600">
-                  <span className="flex items-center gap-1"><Users size={18} /> {maxGuests} guests</span>
+                  <span className="flex items-center gap-1"><Users size={18} /> {maxGuests} tamu</span>
                   <span>•</span>
-                  <span className="flex items-center gap-1"><BedDouble size={18} /> {maxBeds} bedrooms</span>
+                  <span className="flex items-center gap-1"><BedDouble size={18} /> {maxBeds} kamar tidur</span>
                   <span>•</span>
-                  <span className="flex items-center gap-1"><Bath size={18} /> {maxBaths} baths</span>
+                  <span className="flex items-center gap-1"><Bath size={18} /> {maxBaths} kamar mandi</span>
                 </div>
               </div>
               <div className="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold shadow-md shrink-0">
@@ -149,18 +149,18 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
 
             {/* Description */}
             <div className="flex flex-col gap-4 pb-8 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-primary">About this space</h3>
+              <h3 className="text-xl font-semibold text-primary">Tentang tempat ini</h3>
               <p className="text-gray-600 leading-relaxed whitespace-pre-line">
-                {property.deskripsi || "No description provided."}
+                {property.deskripsi || "Tidak ada deskripsi yang tersedia."}
               </p>
               <button className="text-primary font-semibold underline flex items-center gap-1 self-start mt-2 hover:opacity-80">
-                Show more <ChevronRight size={16} />
+                Lihat lebih banyak <ChevronRight size={16} />
               </button>
             </div>
 
             {/* Amenities */}
             <div className="flex flex-col gap-6 pb-8 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-primary">What this place offers</h3>
+              <h3 className="text-xl font-semibold text-primary">Fasilitas yang ditawarkan</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                 {property.fasilitas?.map((item: any) => (
                   <div key={item.fasilitasId} className="flex items-center gap-4 text-gray-700">
@@ -170,13 +170,13 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
                 ))}
               </div>
               <button className="px-6 py-3 rounded-xl border border-primary text-primary font-medium hover:bg-primary/5 transition-colors self-start mt-4">
-                Show all {property.fasilitas?.length || 0} amenities
+                Lihat semua {property.fasilitas?.length || 0} fasilitas
               </button>
             </div>
 
             {/* Location (Map Placeholder) */}
             <div className="flex flex-col gap-6">
-              <h3 className="text-xl font-semibold text-primary">Where you'll be</h3>
+              <h3 className="text-xl font-semibold text-primary">Lokasi Anda</h3>
               <p className="text-gray-600">{property.kota}, {property.provinsi}</p>
               <div className="w-full h-[300px] bg-gray-100 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden relative">
                 <MapPin size={40} className="text-gray-400 absolute z-10" />
@@ -194,14 +194,14 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
               <div className="flex justify-between items-end">
                 <div>
                   <span className="text-2xl font-bold text-primary">{price}</span>
-                  <span className="text-gray-500 font-medium"> / night</span>
+                  <span className="text-gray-500 font-medium"> / malam</span>
                 </div>
                 <div className="flex flex-col items-end text-sm">
                   <div className="flex items-center gap-1 font-medium">
                     <Star size={14} className="fill-yellow-500 text-yellow-500" />
                     4.96
                   </div>
-                  <span className="text-gray-500 underline">128 reviews</span>
+                  <span className="text-gray-500 underline">128 ulasan</span>
                 </div>
               </div>
 
@@ -209,28 +209,28 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
                 <div className="flex border-b border-gray-300">
                   <div className="flex-1 p-3 border-r border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors">
                     <span className="block text-[10px] font-bold uppercase text-primary">Check-in</span>
-                    <span className="text-sm text-gray-600">Add date</span>
+                    <span className="text-sm text-gray-600">Tambah tanggal</span>
                   </div>
                   <div className="flex-1 p-3 cursor-pointer hover:bg-gray-50 transition-colors">
                     <span className="block text-[10px] font-bold uppercase text-primary">Check-out</span>
-                    <span className="text-sm text-gray-600">Add date</span>
+                    <span className="text-sm text-gray-600">Tambah tanggal</span>
                   </div>
                 </div>
                 <div className="p-3 cursor-pointer hover:bg-gray-50 transition-colors flex justify-between items-center">
                   <div>
-                    <span className="block text-[10px] font-bold uppercase text-primary">Guests</span>
-                    <span className="text-sm text-gray-600">1 guest</span>
+                    <span className="block text-[10px] font-bold uppercase text-primary">Tamu</span>
+                    <span className="text-sm text-gray-600">1 tamu</span>
                   </div>
                   <ChevronRight size={18} className="text-gray-400" />
                 </div>
               </div>
 
               <button className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-colors shadow-md flex items-center justify-center gap-2">
-                Check Availability
+                Cek Ketersediaan
               </button>
 
               <div className="text-center text-sm text-gray-500 pt-2 border-t border-gray-100">
-                You won't be charged yet
+                Anda belum akan dikenakan biaya
               </div>
             </div>
           </div>

@@ -4,8 +4,8 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1E2A4F]">My Profile</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage your personal information and security settings.</p>
+        <h1 className="text-2xl font-bold text-[#1E2A4F]">Profil Saya</h1>
+        <p className="text-gray-500 text-sm mt-1">Kelola informasi pribadi dan pengaturan keamanan Anda.</p>
       </div>
       
       {/* Container for Clerk UserProfile */}

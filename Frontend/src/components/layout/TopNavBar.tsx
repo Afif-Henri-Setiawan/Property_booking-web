@@ -22,12 +22,12 @@ export default async function TopNavBar() {
 
         {/* Nav Links (Desktop) */}
         <div className="hidden md:flex items-center gap-8 font-medium text-sm text-gray-500">
-          <Link href="/" className="text-[#1E2A4F] font-semibold">Home</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Listings</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Services</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Favorite</Link>
+          <Link href="/" className="text-[#1E2A4F] font-semibold">Beranda</Link>
+          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Daftar Properti</Link>
+          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Layanan</Link>
+          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Favorit</Link>
           <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Blog</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">About Us</Link>
+          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Tentang Kami</Link>
         </div>
 
         {/* Actions */}
@@ -44,7 +44,7 @@ export default async function TopNavBar() {
               <UserButton>
                 <UserButton.MenuItems>
                   <UserButton.Link
-                    label="My Bookings"
+                    label="Pesanan Saya"
                     labelIcon={<ClipboardList size={15} />}
                     href="/user/bookings"
                   />
@@ -59,15 +59,10 @@ export default async function TopNavBar() {
           ) : (
             <div className="flex items-center gap-4">
               <SignInButton mode="modal">
-                <button className="text-gray-500 hover:text-[#1E2A4F] transition-colors font-medium text-sm hidden sm:block">
-                  Log In
+                <button className="bg-[#1E2A4F] text-white px-6 py-2.5 rounded-full hover:bg-[#1E2A4F] transition-colors font-medium text-sm hidden sm:block">
+                  Masuk
                 </button>
               </SignInButton>
-              <Link href="/host/properties">
-                <button className="px-6 py-2.5 rounded-full bg-[#1E2A4F] text-white hover:bg-[#111827] transition-colors shadow-sm font-medium text-sm">
-                  Get Started
-                </button>
-              </Link>
             </div>
           )}
         </div>

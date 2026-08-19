@@ -11,8 +11,8 @@ export default function CheckoutPage() {
         {/* Left Side: Order Summary */}
         <div className="space-y-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-forest-900">Review Your Booking</h1>
-            <p className="text-slate-500 mt-2">Almost there! Please review your details before payment.</p>
+            <h1 className="text-3xl font-bold text-forest-900">Tinjau Pesanan Anda</h1>
+            <p className="text-slate-500 mt-2">Sedikit lagi! Silakan tinjau detail Anda sebelum pembayaran.</p>
           </div>
 
           <Card className="border-slate-200 overflow-hidden shadow-sm">
@@ -37,18 +37,18 @@ export default function CheckoutPage() {
                   <p className="font-bold text-forest-900">15 Oct 2026</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 font-medium">Guests</p>
-                  <p className="font-bold text-forest-900">2 Adults</p>
+                  <p className="text-slate-500 font-medium">Tamu</p>
+                  <p className="font-bold text-forest-900">2 Dewasa</p>
                 </div>
               </div>
 
               <div className="border-t pt-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">$250 x 3 nights</span>
+                  <span className="text-slate-500">$250 x 3 malam</span>
                   <span className="font-medium">$750.00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Service Fee</span>
+                  <span className="text-slate-500">Biaya Layanan</span>
                   <span className="font-medium">$50.00</span>
                 </div>
                 <div className="flex justify-between border-t pt-2 mt-2">
@@ -68,13 +68,13 @@ export default function CheckoutPage() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="text-primary h-6 w-6" />
-                  <span className="font-bold text-forest-900">Secure Payment</span>
+                  <span className="font-bold text-forest-900">Pembayaran Aman</span>
                 </div>
                 <span className="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-500">Midtrans</span>
               </div>
 
               <div className="space-y-4">
-                <p className="text-sm font-medium text-slate-500 mb-2">Select Payment Method</p>
+                <p className="text-sm font-medium text-slate-500 mb-2">Pilih Metode Pembayaran</p>
                 
                 <button className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-primary bg-primary/5 text-left transition-all">
                   <div className="flex items-center gap-3">
@@ -82,7 +82,7 @@ export default function CheckoutPage() {
                       <CreditCard className="text-primary h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-forest-900">Credit Card</p>
+                      <p className="font-bold text-forest-900">Kartu Kredit</p>
                       <p className="text-xs text-slate-500">Visa, Mastercard, JCB</p>
                     </div>
                   </div>
@@ -96,7 +96,7 @@ export default function CheckoutPage() {
                     <Building2 className="text-slate-500 h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-forest-900">Bank Transfer</p>
+                    <p className="font-bold text-forest-900">Transfer Bank</p>
                     <p className="text-xs text-slate-500">BCA, Mandiri, BNI</p>
                   </div>
                 </button>
@@ -114,9 +114,9 @@ export default function CheckoutPage() {
 
               <div className="mt-8 pt-6 border-t">
                 <Button className="w-full py-6 text-lg rounded-xl bg-primary hover:bg-primary-container text-white font-bold shadow-lg shadow-primary/20">
-                  Pay $800.00
+                  Bayar $800.00
                 </Button>
-                <p className="text-center text-xs text-slate-400 mt-4">By continuing, you agree to the Terms of Service.</p>
+                <p className="text-center text-xs text-slate-400 mt-4">Dengan melanjutkan, Anda menyetujui Syarat & Ketentuan.</p>
               </div>
             </div>
           </div>
