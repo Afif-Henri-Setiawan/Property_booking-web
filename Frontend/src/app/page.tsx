@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import TopNavBar from "@/components/layout/TopNavBar";
+import DateRangeInputs from "@/components/search/DateRangeInputs";
 import {
   ArrowRight,
   MapPin,
@@ -13,22 +14,38 @@ import {
   Bath,
   ChevronLeft,
   ChevronRight,
-  Globe,
+  Building,
+  Home as HomeIcon,
+  Castle,
+  Hotel,
+  Tent,
+  ShieldCheck,
+  Headset,
+  FileText,
 } from "lucide-react";
 
 export default async function Home() {
   let properties = [];
+  let testimonials = [];
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
-    const res = await fetch(`${apiUrl}/properti`, { next: { revalidate: 0 } });
-    if (res.ok) {
-      const json = await res.json();
+    const resProperties = await fetch(`${apiUrl}/properti`, { next: { revalidate: 0 } });
+    if (resProperties.ok) {
+      const json = await resProperties.json();
       if (json.status === 'success') {
         properties = json.data;
       }
     }
+    
+    const resTestimonials = await fetch(`${apiUrl}/ulasan/terbaik`, { next: { revalidate: 0 } });
+    if (resTestimonials.ok) {
+      const json = await resTestimonials.json();
+      if (json.status === 'success') {
+        testimonials = json.data;
+      }
+    }
   } catch (error) {
-    console.error("Failed to fetch properties:", error);
+    console.error("Failed to fetch data:", error);
   }
 
   return (
@@ -39,433 +56,411 @@ export default async function Home() {
       {/* Main Content */}
       <main className="pt-20">
         {/* Hero Section */}
-        <section className="relative px-4 md:px-16 max-w-7xl mx-auto mt-8 mb-32">
-          <div
-            className="relative w-full h-[600px] rounded-3xl overflow-hidden group bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBVd8YTQueNEOqCLGuNlhji2TM4WMvaINmecGKaiPoVC4GCXxhk0gm6fRHV9gr65VxaNy4CjG_pz0-9PrUvHhuYe1RWuVgwQ0RDdfazjkM5pSlks0hjV35-cSq_x9GkZzqg_6JH0O1n0GOe4-uO3jDHplJHRb8EOJKnCtyATLIa9afYKDZhHmW8deT-p8T3hW_uiFjtg4zCtkkokWEzMtOxqUJL9DWHv393qZqUMzvt0Pn_ovdwLjbl')",
-            }}
-          >
-            {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#1b3b36]/40 to-transparent"></div>
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 z-10">
-              <span className="px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-white font-medium text-sm mb-6 shadow-sm">
-                No.1 Property Rental Platform
-              </span>
-              <h1 className="text-4xl md:text-6xl font-bold text-white max-w-4xl drop-shadow-lg mb-12 tracking-tight">
-                Turning Your Vacation Dreams into Reality
-              </h1>
+        <section className="px-4 md:px-8 max-w-7xl mx-auto mt-4 mb-24 pt-4">
+          <div className="relative w-full h-[600px] rounded-[2.5rem] overflow-hidden group bg-cover bg-center shadow-sm"
+              style={{
+                backgroundImage:
+                  "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')",
+              }}>
+            {/* Gradient Overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#e0e5ff]/90 via-[#e0e5ff]/50 to-transparent"></div>
+            
+            {/* Trusted Pill */}
+            <div className="absolute top-8 right-8 bg-white/90 backdrop-blur-sm rounded-full py-2 px-4 flex items-center gap-3 shadow-sm border border-white/50">
+               <div className="flex -space-x-2">
+                 <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 bg-cover bg-center" style={{backgroundImage: "url('https://i.pravatar.cc/100?img=1')"}}></div>
+                 <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-300 bg-cover bg-center" style={{backgroundImage: "url('https://i.pravatar.cc/100?img=2')"}}></div>
+                 <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-400 bg-cover bg-center" style={{backgroundImage: "url('https://i.pravatar.cc/100?img=3')"}}></div>
+               </div>
+               <span className="text-sm text-[#1E2A4F] font-semibold">Trusted by 25K+</span>
             </div>
 
-            {/* Floating Search Filter (Glassmorphism) */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-4xl bg-white/70 backdrop-blur-xl border border-white/30 rounded-[100px] p-2 flex flex-col md:flex-row items-center gap-2 shadow-[0px_20px_40px_rgba(27,59,54,0.15)] z-20">
-              <div className="flex-1 flex items-center gap-4 px-6 py-4 w-full md:w-auto border-b md:border-b-0 md:border-r border-white/20">
-                <MapPin className="text-primary/70" />
-                <div className="flex flex-col flex-1">
-                  <span className="text-xs font-medium text-primary/70">
-                    Destination
-                  </span>
-                  <input
-                    className="bg-transparent border-none p-0 focus:ring-0 text-primary placeholder-primary/50 text-sm h-6 w-full focus:outline-none"
-                    placeholder="Where to?"
-                    type="text"
-                  />
+            {/* Left side text */}
+            <div className="relative h-full flex flex-col justify-center px-8 md:px-16 w-full md:w-3/5 lg:w-1/2">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#1E2A4F] leading-[1.1] tracking-tight mb-6">
+                Discover Spaces<br />That Feel Like Home
+              </h1>
+              <p className="text-lg text-[#1E2A4F]/80 max-w-md font-medium">
+                Find handpicked properties for rent that match your lifestyle and budget.
+              </p>
+            </div>
+
+            {/* Search Filter Bar */}
+            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-[90%] md:w-auto z-30">
+              <form action="/search" method="GET" className="bg-white border border-gray-100 rounded-[2rem] p-3 flex flex-col md:flex-row items-center gap-2 shadow-2xl">
+                
+                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[200px] border-b md:border-b-0 md:border-r border-gray-100">
+                  <span className="text-xs font-semibold text-gray-400 mb-1">Location</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      name="kota"
+                      className="bg-transparent border-none p-0 focus:ring-0 text-[#1E2A4F] placeholder-[#1E2A4F] text-sm font-semibold w-full focus:outline-none"
+                      placeholder="New York, USA"
+                      type="text"
+                    />
+                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 flex items-center gap-4 px-6 py-4 w-full md:w-auto border-b md:border-b-0 md:border-r border-white/20">
-                <Calendar className="text-primary/70" />
-                <div className="flex flex-col flex-1">
-                  <span className="text-xs font-medium text-primary/70">
-                    Check in - out
-                  </span>
-                  <input
-                    className="bg-transparent border-none p-0 focus:ring-0 text-primary placeholder-primary/50 text-sm h-6 w-full focus:outline-none"
-                    placeholder="Add dates"
-                    type="text"
-                  />
+
+                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[180px] border-b md:border-b-0 md:border-r border-gray-100">
+                  <span className="text-xs font-semibold text-gray-400 mb-1">Property Type</span>
+                  <div className="flex items-center gap-2 w-full justify-between cursor-pointer">
+                    <span className="text-[#1E2A4F] text-sm font-semibold">Any Type</span>
+                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 flex items-center gap-4 px-6 py-4 w-full md:w-auto">
-                <Users className="text-primary/70" />
-                <div className="flex flex-col flex-1">
-                  <span className="text-xs font-medium text-primary/70">
-                    Guests
-                  </span>
-                  <input
-                    className="bg-transparent border-none p-0 focus:ring-0 text-primary placeholder-primary/50 text-sm h-6 w-full focus:outline-none"
-                    placeholder="Add guests"
-                    type="text"
-                  />
+
+                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[180px]">
+                  <span className="text-xs font-semibold text-gray-400 mb-1">Price Range</span>
+                  <div className="flex items-center gap-2 w-full justify-between cursor-pointer">
+                    <span className="text-[#1E2A4F] text-sm font-semibold">$1000 - $5000</span>
+                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90" />
+                  </div>
                 </div>
-              </div>
-              <button className="w-full md:w-auto h-14 md:w-14 rounded-full bg-primary text-white flex items-center justify-center hover:bg-[#1b3b36] transition-colors shadow-md mx-2 mb-2 md:mb-0 shrink-0">
-                <Search size={20} />
-                <span className="md:hidden ml-2">Search</span>
-              </button>
+
+                <button type="submit" className="w-full md:w-auto h-14 px-8 rounded-full bg-[#1E2A4F] text-white flex items-center justify-center hover:bg-[#111827] transition-colors shadow-sm shrink-0 font-medium text-sm">
+                  <Search size={18} className="mr-2" /> Search
+                </button>
+              </form>
             </div>
           </div>
         </section>
 
-        {/* Explore Properties */}
-        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
-            <h2 className="text-3xl font-semibold text-primary">
-              Explore our latest properties
-            </h2>
-            <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar">
-              <button className="px-6 py-2 rounded-full bg-primary text-white text-sm whitespace-nowrap">
-                All Types
-              </button>
-              <button className="px-6 py-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm whitespace-nowrap">
-                Villa
-              </button>
-              <button className="px-6 py-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm whitespace-nowrap">
-                Hotel
-              </button>
-              <button className="px-6 py-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm whitespace-nowrap">
-                Resort
-              </button>
-              <button className="px-6 py-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm whitespace-nowrap">
-                Cabin
-              </button>
-              <button className="px-6 py-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors text-sm whitespace-nowrap">
-                Apartment
-              </button>
+        {/* 4 Feature Row */}
+        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+              <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                <HomeIcon size={24} strokeWidth={2} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-[#1E2A4F]">Verified Properties</h4>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">All properties are verified for your peace of mind.</p>
+              </div>
             </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <ShieldCheck size={24} strokeWidth={2} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-[#1E2A4F]">Safe & Secure</h4>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Your safety is our priority in every transaction.</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+              <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                <Headset size={24} strokeWidth={2} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-[#1E2A4F]">24/7 Support</h4>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Our team is here to help you anytime, anywhere.</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+              <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center shrink-0">
+                <Star size={24} strokeWidth={2} />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-[#1E2A4F]">Best Price Guarantee</h4>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">Get the best deals at the best prices.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* More Than Just A Property Section */}
+        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="lg:w-5/12 flex flex-col gap-6">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Why Choose Nestoria</span>
+              <h2 className="text-4xl lg:text-5xl font-bold text-[#1E2A4F] leading-tight">
+                More Than Just<br/>A Property
+              </h2>
+              <p className="text-gray-500 text-sm leading-relaxed max-w-md">
+                We offer more than just spaces. We deliver experiences that fit your life and future.
+              </p>
+              <ul className="flex flex-col gap-4 mt-2">
+                <li className="flex items-center gap-4 text-sm text-gray-600 font-medium">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 text-xs">✓</div>
+                  Wide range of premium rental options
+                </li>
+                <li className="flex items-center gap-4 text-sm text-gray-600 font-medium">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 text-xs">✓</div>
+                  Flexible rent terms & easy agreements
+                </li>
+                <li className="flex items-center gap-4 text-sm text-gray-600 font-medium">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 text-xs">✓</div>
+                  Personalized recommendations
+                </li>
+                <li className="flex items-center gap-4 text-sm text-gray-600 font-medium">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 text-xs">✓</div>
+                  Trusted by thousands of happy clients
+                </li>
+              </ul>
+              <div className="mt-4">
+                <button className="px-8 py-3.5 rounded-full bg-[#1E2A4F] text-white hover:bg-[#111827] transition-colors shadow-sm font-semibold text-sm">
+                  Learn More
+                </button>
+              </div>
+            </div>
+            <div className="lg:w-7/12 relative w-full h-[400px] lg:h-[500px] rounded-[2rem] overflow-hidden shadow-sm">
+              <div className="absolute inset-0 bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80')"}}></div>
+            </div>
+          </div>
+        </section>
+
+        {/* Explore Property Types */}
+        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-20">
+          <div className="flex justify-between items-end mb-8">
+            <h2 className="text-2xl font-bold text-black">Explore Property Types</h2>
+            <Link href="/search" className="text-black font-semibold hover:underline flex items-center gap-1 text-sm">
+              View All <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="border border-gray-200 rounded-2xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer bg-white group">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Building size={24} />
+              </div>
+              <div>
+                <h4 className="font-semibold text-black">Apartments</h4>
+                <p className="text-xs text-gray-500">1,245 Listings</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-2xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer bg-white group">
+              <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <HomeIcon size={24} />
+              </div>
+              <div>
+                <h4 className="font-semibold text-black">Houses</h4>
+                <p className="text-xs text-gray-500">2,345 Listings</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-2xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer bg-white group">
+              <div className="w-12 h-12 rounded-xl bg-green-50 text-green-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Castle size={24} />
+              </div>
+              <div>
+                <h4 className="font-semibold text-black">Villas</h4>
+                <p className="text-xs text-gray-500">856 Listings</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-2xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer bg-white group">
+              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Hotel size={24} />
+              </div>
+              <div>
+                <h4 className="font-semibold text-black">Hotels</h4>
+                <p className="text-xs text-gray-500">1,032 Listings</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-2xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer bg-white group hidden lg:flex">
+              <div className="w-12 h-12 rounded-xl bg-stone-50 text-stone-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Tent size={24} />
+              </div>
+              <div>
+                <h4 className="font-semibold text-black">Cabins</h4>
+                <p className="text-xs text-gray-500">321 Listings</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Properties */}
+        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
+          <div className="flex justify-between items-end mb-8">
+            <h2 className="text-2xl font-bold text-black">Featured Properties</h2>
+            <Link href="/search" className="text-black font-semibold hover:underline flex items-center gap-1 text-sm">
+              View All Properties <ArrowRight size={16} />
+            </Link>
           </div>
 
           {/* Property Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {properties.length > 0 ? (
-              properties.map((property: any) => {
+              properties.slice(0, 4).map((property: any) => {
                 const fotoUtama = property.foto?.find((f: any) => f.isUtama)?.url || property.foto?.[0]?.url || 'https://via.placeholder.com/400x300';
                 const tipeKamarDasar = property.tipeKamar?.[0];
                 const harga = tipeKamarDasar?.hargaDasar 
                   ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(tipeKamarDasar.hargaDasar) 
                   : 'N/A';
                 const beds = tipeKamarDasar?.maksDewasa || 2;
-                const baths = tipeKamarDasar?.maksAnak || 2; // placeholder logic
+                const baths = tipeKamarDasar?.maksAnak || 2;
                 const guests = tipeKamarDasar?.maksTamu || 4;
                 
                 return (
-                  <Link href={`/property/${property.id}`} key={property.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 group cursor-pointer flex flex-col">
-                    <div className="relative h-64 overflow-hidden">
+                  <Link href={`/property/${property.id}`} key={property.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col">
+                    <div className="relative h-48 overflow-hidden p-2">
+                      <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white text-black text-xs font-bold shadow-sm z-10">
+                        Featured
+                      </div>
+                      <button className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors z-10 shadow-sm">
+                        <Heart size={16} />
+                      </button>
                       <div
-                        className="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full rounded-xl bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
                         style={{
                           backgroundImage: `url('${fotoUtama}')`,
                         }}
                       ></div>
-                      <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/70 backdrop-blur flex items-center justify-center text-primary hover:text-red-500 transition-colors z-10">
-                        <Heart size={20} />
-                      </button>
-                      <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/70 backdrop-blur flex items-center gap-1 z-10">
-                        <Star size={16} className="text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm text-primary font-bold">4.9</span>
-                      </div>
                     </div>
-                    <div className="p-6 flex flex-col flex-1">
-                      <h3 className="text-xl font-semibold text-primary mb-2 truncate">
+                    <div className="p-5 flex flex-col flex-1">
+                      <h3 className="text-lg font-bold text-black mb-1 truncate">
                         {property.nama}
                       </h3>
-                      <p className="text-sm text-gray-500 mb-4 flex items-center gap-1">
-                        <MapPin size={16} /> {property.kota}, {property.provinsi}
+                      <p className="text-xs text-gray-500 mb-4 flex items-center gap-1">
+                        <MapPin size={14} /> {property.kota}, {property.provinsi}
                       </p>
-                      <div className="flex items-center gap-4 mb-6 border-b border-gray-100 pb-4">
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Bed size={18} /> {beds} Beds
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Bath size={18} /> {baths} Baths
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Users size={18} /> {guests} Guests
-                        </div>
+                      <div className="text-lg text-black font-bold mb-4">
+                        {harga} <span className="text-xs text-gray-500 font-normal">/night</span>
                       </div>
-                      <div className="mt-auto flex justify-between items-center">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl text-primary font-bold">{harga}</span>
-                          <span className="text-sm text-gray-500">/night</span>
+                      <div className="flex items-center gap-4 mt-auto border-t border-gray-100 pt-4">
+                        <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                          <Bed size={16} /> {beds} Beds
                         </div>
-                        <button className="px-6 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-colors text-sm font-medium">
-                          Book Now
-                        </button>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                          <Bath size={16} /> {baths} Baths
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                          <Users size={16} /> {guests} Guests
+                        </div>
                       </div>
                     </div>
                   </Link>
                 );
               })
             ) : (
-              <div className="col-span-3 text-center py-12 text-gray-500">
+              <div className="col-span-4 text-center py-12 text-gray-500">
                 Belum ada properti yang tersedia saat ini.
               </div>
             )}
           </div>
-
-          <div className="flex justify-center mt-12">
-            <button className="px-8 py-3 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors font-medium flex items-center gap-2">
-              View All Properties
-              <ArrowRight size={18} />
-            </button>
-          </div>
         </section>
+
+
 
         {/* Testimonials Section */}
         <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
-          <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="md:w-1/3 flex flex-col gap-6">
-              <h2 className="text-3xl font-semibold text-primary">
-                Discover what clients are saying about us
-              </h2>
-              <p className="text-gray-500">
-                Hear from our community of travelers and hosts about their
-                experiences with StayNest. Real stories from real people.
-              </p>
-              <div className="flex gap-4">
-                <button className="w-12 h-12 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-                  <ChevronLeft size={24} />
-                </button>
-                <button className="w-12 h-12 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
-                  <ChevronRight size={24} />
-                </button>
-              </div>
+          <div className="flex justify-between items-end mb-8">
+            <h2 className="text-3xl font-bold text-black">What Our Clients Say</h2>
+            <div className="flex gap-4">
+              <button className="w-10 h-10 rounded-full border border-gray-200 text-black flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <ChevronLeft size={20} />
+              </button>
+              <button className="w-10 h-10 rounded-full border border-gray-200 text-black flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <ChevronRight size={20} />
+              </button>
             </div>
-            <div className="md:w-2/3 flex gap-6 overflow-x-auto pb-4 no-scrollbar snap-x">
-              {/* Card 1 */}
-              <div className="min-w-[300px] md:min-w-[400px] bg-white p-8 rounded-2xl border border-gray-100 snap-center shadow-sm">
-                <div className="flex gap-1 text-yellow-500 mb-4">
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                </div>
-                <p className="text-lg text-gray-600 italic mb-6">
-                  "The villa in Aspen exceeded all our expectations. The booking
-                  process was seamless, and the property was exactly as
-                  described. A truly luxurious experience."
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gray-200"></div>
-                  <div>
-                    <h4 className="font-semibold text-primary">Sarah Jenkins</h4>
-                    <p className="text-sm text-gray-500">
-                      Stayed at The Grandview
-                    </p>
+          </div>
+          <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar snap-x">
+            {testimonials.length > 0 ? (
+              testimonials.map((testimonial: any) => (
+                <div key={testimonial.id} className="min-w-[300px] md:min-w-[400px] bg-white p-8 rounded-2xl border border-gray-100 snap-center shadow-sm flex flex-col">
+                  <div className="text-5xl text-black font-serif leading-none h-8 text-opacity-30">"</div>
+                  <p className="text-sm text-gray-600 mb-8 flex-1 leading-relaxed">
+                    {testimonial.komentar || 'Pengalaman yang luar biasa!'}
+                  </p>
+                  <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 bg-cover bg-center" style={{backgroundImage: "url('https://i.pravatar.cc/150')"}}></div>
+                      <div>
+                        <h4 className="font-semibold text-black text-sm line-clamp-1">{testimonial.pengguna?.nama || 'Anonim'}</h4>
+                        <p className="text-xs text-gray-500 line-clamp-1">
+                          {testimonial.kota || 'User'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5 text-yellow-400">
+                      {[...Array(testimonial.penilaian)].map((_, i) => (
+                        <Star key={i} size={14} className="fill-yellow-400" />
+                      ))}
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="min-w-[300px] md:min-w-[400px] bg-white p-8 rounded-2xl border border-gray-100 snap-center shadow-sm flex items-center justify-center text-gray-500 w-full">
+                Belum ada ulasan saat ini.
               </div>
-
-              {/* Card 2 */}
-              <div className="min-w-[300px] md:min-w-[400px] bg-white p-8 rounded-2xl border border-gray-100 snap-center shadow-sm">
-                <div className="flex gap-1 text-yellow-500 mb-4">
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                  <Star size={20} className="fill-yellow-500" />
-                </div>
-                <p className="text-lg text-gray-600 italic mb-6">
-                  "Our family vacation at Royal Crest Manor was unforgettable.
-                  The amenities were top-notch and the location was perfect. We
-                  will definitely use StayNest again."
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gray-200"></div>
-                  <div>
-                    <h4 className="font-semibold text-primary">Michael Chen</h4>
-                    <p className="text-sm text-gray-500">
-                      Stayed at Royal Crest Manor
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
-        {/* News & Updates Section */}
+        {/* Newsletter CTA */}
         <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
-          <div className="flex justify-between items-end mb-10">
-            <h2 className="text-3xl font-semibold text-primary">
-              Latest News & Updates
-            </h2>
-            <button className="hidden md:flex px-6 py-2 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-colors font-medium items-center gap-2">
-              View All Articles
-            </button>
-          </div>
-
-          {/* Highlight Card */}
-          <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden flex flex-col md:flex-row mb-8 group cursor-pointer hover:shadow-2xl transition-all duration-300">
-            <div
-              className="md:w-1/2 h-64 md:h-auto bg-cover bg-center bg-gray-200"
-              style={{
-                backgroundImage:
-                  "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCy3Ps_CdX2BN15cVk11qpxXxWNqfx1ovXW3n7BAsV2Kj5UIB8PJ6tp_o_TN3FaV6I-hlMVGaZW1Hlc-5Ery-PgRSoGPiusalxxlUSc_d43ScEV_-mq00P-PR5QaDvTbICy3C4E1fwsFmR41I08OjomlSZFxV3ImT55aX7CtbPMrLJ3pdaBf-Wx3aUN5YuNb77E7MhkNmGCrjlz7jkm_xdLWjE2JzNBJ77rpT9--uMO5P7ClsPOV7Wr')",
-              }}
-            ></div>
-            <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-              <div className="flex gap-3 mb-4">
-                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                  Travel Guide
-                </span>
-                <span className="text-sm text-gray-500 flex items-center">
-                  Oct 15, 2024
-                </span>
+          <div className="bg-[#111827] rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-center">
+            <div className="w-full md:w-1/3 h-48 md:h-auto self-stretch bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')"}}></div>
+            <div className="w-full md:w-2/3 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center justify-between">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-white mb-2">Get Exclusive Property Updates</h3>
+                <p className="text-gray-400 text-sm">Subscribe to our newsletter and be the first to know about new listings and special offers.</p>
               </div>
-              <h3 className="text-2xl font-semibold text-primary mb-4 group-hover:text-[#1b3b36] transition-colors">
-                The Ultimate Guide to Luxury Winter Getaways in the Swiss Alps
-              </h3>
-              <p className="text-gray-500 mb-6">
-                Discover the most exclusive chalets and hidden gems for your
-                next winter escape. From ski-in/ski-out access to private chefs,
-                here's everything you need to know.
-              </p>
-              <div className="flex items-center gap-2 text-primary font-medium">
-                Read Article <ArrowRight size={18} />
-              </div>
-            </div>
-          </div>
-
-          {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300">
-              <div className="h-48 bg-gray-200"></div>
-              <div className="p-6">
-                <div className="flex gap-3 mb-3">
-                  <span className="text-sm font-medium text-primary">
-                    Host Stories
-                  </span>
-                </div>
-                <h4 className="text-xl font-semibold text-primary mb-2 line-clamp-2">
-                  How I Turned My Coastal Villa into a Top-Rated StayNest
-                </h4>
-                <p className="text-gray-500 line-clamp-2">
-                  Learn the secrets of successful hosting from one of our
-                  top-rated property owners in Malibu.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300">
-              <div className="h-48 bg-gray-200"></div>
-              <div className="p-6">
-                <div className="flex gap-3 mb-3">
-                  <span className="text-sm font-medium text-primary">
-                    Travel Guide
-                  </span>
-                </div>
-                <h4 className="text-xl font-semibold text-primary mb-2 line-clamp-2">
-                  Top 10 Hidden Beach Retreats for Summer 2024
-                </h4>
-                <p className="text-gray-500 line-clamp-2">
-                  Beat the crowds and discover pristine beaches with our
-                  curated list of secluded coastal properties.
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300 hidden lg:block">
-              <div className="h-48 bg-gray-200"></div>
-              <div className="p-6">
-                <div className="flex gap-3 mb-3">
-                  <span className="text-sm font-medium text-primary">
-                    Platform News
-                  </span>
-                </div>
-                <h4 className="text-xl font-semibold text-primary mb-2 line-clamp-2">
-                  Introducing the New StayNest Concierge Service
-                </h4>
-                <p className="text-gray-500 line-clamp-2">
-                  Elevate your stay with our new 24/7 personalized concierge
-                  service, available exclusively for premium bookings.
-                </p>
-              </div>
+              <form className="flex w-full md:w-auto bg-white rounded-full p-1 pl-4 items-center flex-shrink-0">
+                <input type="email" placeholder="Enter your email address" className="bg-transparent border-none focus:ring-0 text-sm w-full md:w-64 outline-none px-2 font-medium" />
+                <button type="submit" className="px-6 py-3 rounded-full bg-[#059669] text-white text-sm font-semibold hover:bg-[#047857] transition-colors whitespace-nowrap">Subscribe</button>
+              </form>
             </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-20 bg-gray-50 border-t border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 px-4 md:px-16 max-w-7xl mx-auto">
+      <footer className="w-full py-20 bg-[#111827] border-t border-gray-800 text-white">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 px-4 md:px-16 max-w-7xl mx-auto">
           {/* Brand Column */}
-          <div className="col-span-1 md:col-span-1 flex flex-col gap-4">
+          <div className="col-span-1 md:col-span-2 flex flex-col gap-6">
             <Link
               href="/"
-              className="font-bold text-xl text-primary flex items-center gap-2"
+              className="font-bold text-2xl text-white flex items-center gap-2"
             >
-              <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center text-white">
+              <div className="w-8 h-8 rounded-md bg-white flex items-center justify-center text-black">
                 <MapPin size={18} />
               </div>
               StayNest
             </Link>
-            <p className="text-gray-500 mt-4">
-              Turning your vacation dreams into reality with premium, curated
-              luxury rentals worldwide.
+            <p className="text-gray-400 text-sm max-w-xs leading-relaxed">
+              Your trusted partner in finding the perfect property.
             </p>
+            <div className="flex items-center gap-4 mt-2">
+               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-white cursor-pointer transition-colors"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-white cursor-pointer transition-colors"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-white cursor-pointer transition-colors"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-white cursor-pointer transition-colors"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+            </div>
           </div>
 
-          {/* Links Columns */}
-          <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-8 pt-4 md:pt-0">
-            <div className="flex flex-col gap-3">
-              <h4 className="font-semibold text-primary mb-2">Company</h4>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-primary transition-colors"
-              >
-                About Us
-              </Link>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-primary transition-colors"
-              >
-                Careers
-              </Link>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-primary transition-colors"
-              >
-                Contact Us
-              </Link>
-            </div>
-            <div className="flex flex-col gap-3">
-              <h4 className="font-semibold text-primary mb-2">Legal</h4>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-primary transition-colors"
-              >
-                Terms of Service
-              </Link>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-primary transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-primary transition-colors"
-              >
-                Sitemap
-              </Link>
-            </div>
+          <div className="flex flex-col gap-4">
+            <h4 className="font-semibold text-white mb-2">Quick Links</h4>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Buy</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Rent</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Sell</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Agents</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Blog</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Contact</Link>
+          </div>
+          <div className="flex flex-col gap-4">
+            <h4 className="font-semibold text-white mb-2">Property Types</h4>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Apartments</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Houses</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Villas</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Condos</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Townhouses</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Land</Link>
+          </div>
+          <div className="flex flex-col gap-4">
+            <h4 className="font-semibold text-white mb-2">Company</h4>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">About Us</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Careers</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">FAQ</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Terms & Conditions</Link>
+            <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Privacy Policy</Link>
           </div>
         </div>
 
-        <div className="px-4 md:px-16 max-w-7xl mx-auto mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500">© 2024 StayNest. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link
-              href="#"
-              className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-colors"
-            >
-              <Globe size={20} />
-            </Link>
+        <div className="px-4 md:px-16 max-w-7xl mx-auto mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-gray-400 text-sm">© 2024 StayNest. All rights reserved.</p>
+          <div className="flex gap-1 text-gray-400 text-sm items-center">
+            Designed with <Heart size={14} className="text-red-500 fill-red-500 mx-1" /> for your dream home
           </div>
         </div>
       </footer>
