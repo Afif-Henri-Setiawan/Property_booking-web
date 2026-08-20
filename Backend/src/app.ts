@@ -41,6 +41,14 @@ app.use('/api/v1/pemesanan', pemesananRoutes);
 app.use('/api/v1/pembayaran', pembayaranRoutes);
 app.use('/api/v1/ulasan', ulasanRoutes);
 
+// Base API Route
+app.get('/api/v1', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Welcome to Property Booking API v1',
+  });
+});
+
 // Health check
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'success', message: 'Server is healthy' });
