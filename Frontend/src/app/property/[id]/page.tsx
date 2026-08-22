@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import BookingWidget from "@/components/property/BookingWidget";
 
 // A small helper to pick an icon based on amenity name
 function getAmenityIcon(name: string) {
@@ -240,49 +241,7 @@ export default async function PropertyDetail({ params }: { params: Promise<{ id:
 
           {/* Right Column (Sticky Booking Widget) */}
           <div className="w-full lg:w-[400px] shrink-0">
-            <div className="sticky top-28 bg-white border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-3xl p-8 flex flex-col gap-6">
-              <div className="flex justify-between items-end">
-                <div>
-                  <span className="text-2xl font-bold text-primary">{price}</span>
-                  <span className="text-gray-500 font-medium"> / malam</span>
-                </div>
-                <div className="flex flex-col items-end text-sm">
-                  <div className="flex items-center gap-1 font-medium">
-                    <Star size={14} className="fill-yellow-500 text-yellow-500" />
-                    4.96
-                  </div>
-                  <span className="text-gray-500 underline">128 ulasan</span>
-                </div>
-              </div>
-
-              <div className="border border-gray-300 rounded-2xl overflow-hidden flex flex-col">
-                <div className="flex border-b border-gray-300">
-                  <div className="flex-1 p-3 border-r border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors">
-                    <span className="block text-[10px] font-bold uppercase text-primary">Check-in</span>
-                    <span className="text-sm text-gray-600">Tambah tanggal</span>
-                  </div>
-                  <div className="flex-1 p-3 cursor-pointer hover:bg-gray-50 transition-colors">
-                    <span className="block text-[10px] font-bold uppercase text-primary">Check-out</span>
-                    <span className="text-sm text-gray-600">Tambah tanggal</span>
-                  </div>
-                </div>
-                <div className="p-3 cursor-pointer hover:bg-gray-50 transition-colors flex justify-between items-center">
-                  <div>
-                    <span className="block text-[10px] font-bold uppercase text-primary">Tamu</span>
-                    <span className="text-sm text-gray-600">1 tamu</span>
-                  </div>
-                  <ChevronRight size={18} className="text-gray-400" />
-                </div>
-              </div>
-
-              <button className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-colors shadow-md flex items-center justify-center gap-2">
-                Cek Ketersediaan
-              </button>
-
-              <div className="text-center text-sm text-gray-500 pt-2 border-t border-gray-100">
-                Anda belum akan dikenakan biaya
-              </div>
-            </div>
+            <BookingWidget price={price} propertyId={property.id} />
           </div>
 
         </div>
