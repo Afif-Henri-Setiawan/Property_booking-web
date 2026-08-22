@@ -32,7 +32,7 @@ export default function BookingsPage() {
         // or pass a custom token here.
         // For now, we try to fetch from the API. If it fails (e.g. 401), 
         // we show empty or mock data.
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL as string;
         
         // Try getting the token from local storage (if custom auth is used)
         const token = localStorage.getItem('token'); 

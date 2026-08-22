@@ -28,7 +28,7 @@ export default async function Home() {
   let properties = [];
   let testimonials = [];
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL as string;
     const resProperties = await fetch(`${apiUrl}/properti`, { next: { revalidate: 0 } });
     if (resProperties.ok) {
       const json = await resProperties.json();
@@ -94,27 +94,46 @@ export default async function Home() {
                   <div className="flex items-center gap-2">
                     <input
                       name="kota"
-                      className="bg-transparent border-none p-0 focus:ring-0 text-[#1E2A4F] placeholder-[#1E2A4F] text-sm font-semibold w-full focus:outline-none"
-                      placeholder="New York, USA"
+                      className="bg-transparent border-none p-0 focus:ring-0 text-[#1E2A4F] placeholder-gray-400 text-sm font-semibold w-full focus:outline-none"
+                      placeholder="Mau ke mana?"
                       type="text"
                     />
-                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90" />
                   </div>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[180px] border-b md:border-b-0 md:border-r border-gray-100">
+                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[180px] border-b md:border-b-0 md:border-r border-gray-100 relative">
                   <span className="text-xs font-semibold text-gray-400 mb-1">Tipe Properti</span>
-                  <div className="flex items-center gap-2 w-full justify-between cursor-pointer">
-                    <span className="text-[#1E2A4F] text-sm font-semibold">Semua Tipe</span>
-                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90" />
+                  <div className="flex items-center gap-2 w-full">
+                    <select
+                      name="tipe"
+                      className="bg-transparent border-none p-0 focus:ring-0 text-[#1E2A4F] text-sm font-semibold w-full focus:outline-none cursor-pointer appearance-none"
+                    >
+                      <option value="">Semua Tipe</option>
+                      <option value="Hotel">Hotel</option>
+                      <option value="Vila">Vila</option>
+                      <option value="Apartemen">Apartemen</option>
+                      <option value="Rumah">Rumah</option>
+                      <option value="Kabin">Kabin</option>
+                    </select>
+                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90 absolute right-6 pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[180px]">
+                <div className="flex-1 flex flex-col justify-center px-6 py-2 min-w-[180px] relative">
                   <span className="text-xs font-semibold text-gray-400 mb-1">Rentang Harga</span>
-                  <div className="flex items-center gap-2 w-full justify-between cursor-pointer">
-                    <span className="text-[#1E2A4F] text-sm font-semibold">$1000 - $5000</span>
-                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90" />
+                  <div className="flex items-center gap-2 w-full">
+                    <select
+                      name="harga"
+                      className="bg-transparent border-none p-0 focus:ring-0 text-[#1E2A4F] text-sm font-semibold w-full focus:outline-none cursor-pointer appearance-none"
+                    >
+                      <option value="">Semua Harga</option>
+                      <option value="0-500000">Di bawah Rp 500.000</option>
+                      <option value="500000-1000000">Rp 500.000 - Rp 1.000.000</option>
+                      <option value="1000000-2000000">Rp 1.000.000 - Rp 2.000.000</option>
+                      <option value="2000000-5000000">Rp 2.000.000 - Rp 5.000.000</option>
+                      <option value="5000000-">Di atas Rp 5.000.000</option>
+                    </select>
+                    <ChevronRight size={16} className="text-gray-400 shrink-0 rotate-90 absolute right-6 pointer-events-none" />
                   </div>
                 </div>
 

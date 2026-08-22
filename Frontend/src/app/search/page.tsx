@@ -8,13 +8,16 @@ import { MapPin, Star, Bed, Bath, Users, Heart } from "lucide-react";
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { kota, tanggalMulai, tanggalSelesai, dewasa, anak, jumlahKamar } = searchParams;
+  const params = await searchParams;
+  const { kota, tipe, harga, tanggalMulai, tanggalSelesai, dewasa, anak, jumlahKamar } = params;
   
   // Build query string
   const query = new URLSearchParams();
   if (kota) query.append('kota', kota as string);
+  if (tipe) query.append('tipe', tipe as string);
+  if (harga) query.append('harga', harga as string);
   if (tanggalMulai) query.append('tanggalMulai', tanggalMulai as string);
   if (tanggalSelesai) query.append('tanggalSelesai', tanggalSelesai as string);
   if (dewasa) query.append('dewasa', dewasa as string);
@@ -23,7 +26,7 @@ export default async function SearchPage({
 
   let properties = [];
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL as string;
     const queryString = query.toString();
     const url = `${apiUrl}/search${queryString ? `?${queryString}` : ''}`;
     
@@ -66,14 +69,47 @@ export default async function SearchPage({
               layout="vertical" 
             />
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tipe Properti</label>
+              <select
+                name="tipe"
+                defaultValue={tipe as string || ''}
+                className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm bg-white"
+              >
+                <option value="">Semua Tipe</option>
+                <option value="Hotel">Hotel</option>
+                <option value="Vila">Vila</option>
+                <option value="Apartemen">Apartemen</option>
+                <option value="Rumah">Rumah</option>
+                <option value="Kabin">Kabin</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Rentang Harga</label>
+              <select
+                name="harga"
+                defaultValue={harga as string || ''}
+                className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm bg-white"
+              >
+                <option value="">Semua Harga</option>
+                <option value="0-500000">Di bawah Rp 500.000</option>
+                <option value="500000-1000000">Rp 500.000 - Rp 1.000.000</option>
+                <option value="1000000-2000000">Rp 1.000.000 - Rp 2.000.000</option>
+                <option value="2000000-5000000">Rp 2.000.000 - Rp 5.000.000</option>
+                <option value="5000000-">Di atas Rp 5.000.000</option>
+              </select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tamu Dewasa</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Jumlah Tamu</label>
                 <input 
                   type="number" 
                   name="dewasa" 
                   min="1"
-                  defaultValue={dewasa as string || '1'}
+                  defaultValue={dewasa as string || ''}
+                  placeholder="1"
                   className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
                 />
               </div>
@@ -83,7 +119,8 @@ export default async function SearchPage({
                   type="number" 
                   name="jumlahKamar" 
                   min="1"
-                  defaultValue={jumlahKamar as string || '1'}
+                  defaultValue={jumlahKamar as string || ''}
+                  placeholder="1"
                   className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
                 />
               </div>

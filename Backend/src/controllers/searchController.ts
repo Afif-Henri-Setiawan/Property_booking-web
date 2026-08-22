@@ -7,11 +7,23 @@ const prisma = new PrismaClient();
 export const searchProperti = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const kota = req.query.kota as string;
+    const tipe = req.query.tipe as string;
+    const hargaStr = req.query.harga as string;
     const tanggalMulai = req.query.tanggalMulai ? new Date(req.query.tanggalMulai as string) : undefined;
     const tanggalSelesai = req.query.tanggalSelesai ? new Date(req.query.tanggalSelesai as string) : undefined;
-    const jumlahKamar = parseInt((req.query.jumlahKamar as string) || '1', 10);
-    const dewasa = parseInt((req.query.dewasa as string) || '1', 10);
-    const anak = parseInt((req.query.anak as string) || '0', 10);
+    const jumlahKamar = req.query.jumlahKamar ? parseInt(req.query.jumlahKamar as string, 10) : undefined;
+    const dewasa = req.query.dewasa ? parseInt(req.query.dewasa as string, 10) : undefined;
+    const anak = req.query.anak ? parseInt(req.query.anak as string, 10) : undefined;
+
+    let hargaMin: number | undefined;
+    let hargaMax: number | undefined;
+    if (hargaStr) {
+      const parts = hargaStr.split('-');
+      if (parts.length === 2) {
+        if (parts[0]) hargaMin = Number(parts[0]);
+        if (parts[1]) hargaMax = Number(parts[1]);
+      }
+    }
 
     // 1. Ambil semua properti yang DITERBITKAN dan cocok dengan lokasi serta kapasitas dasar kamar
     const properties = await prisma.properti.findMany({
@@ -22,11 +34,16 @@ export const searchProperti = async (req: Request, res: Response, next: NextFunc
           { alamat: { contains: kota, mode: 'insensitive' } },
           { provinsi: { contains: kota, mode: 'insensitive' } }
         ] : undefined,
+        tipe: tipe ? { nama: { contains: tipe, mode: 'insensitive' } } : undefined,
         tipeKamar: {
           some: {
             status: 'AKTIF',
-            maksDewasa: { gte: dewasa },
-            maksAnak: { gte: anak }
+            maksDewasa: dewasa ? { gte: dewasa } : undefined,
+            maksAnak: anak ? { gte: anak } : undefined,
+            hargaDasar: {
+              gte: hargaMin !== undefined ? hargaMin : undefined,
+              lte: hargaMax !== undefined ? hargaMax : undefined
+            }
           }
         }
       },
@@ -36,8 +53,12 @@ export const searchProperti = async (req: Request, res: Response, next: NextFunc
         tipeKamar: {
           where: {
             status: 'AKTIF',
-            maksDewasa: { gte: dewasa },
-            maksAnak: { gte: anak }
+            maksDewasa: dewasa ? { gte: dewasa } : undefined,
+            maksAnak: anak ? { gte: anak } : undefined,
+            hargaDasar: {
+              gte: hargaMin !== undefined ? hargaMin : undefined,
+              lte: hargaMax !== undefined ? hargaMax : undefined
+            }
           },
           include: {
             paketHarga: { where: { status: 'AKTIF' } },
@@ -84,7 +105,7 @@ export const searchProperti = async (req: Request, res: Response, next: NextFunc
         const hasAvailableRoomType = prop.tipeKamar.some(kamar => {
           // Unit dianggap tersedia jika tidak ada blokir dan tidak ada pemesanan yang tumpang tindih
           const availableUnitsCount = kamar.unit.filter(u => u.blokir.length === 0 && u.pemesanan.length === 0).length;
-          return availableUnitsCount >= jumlahKamar;
+          return availableUnitsCount >= (jumlahKamar || 1);
         });
         return hasAvailableRoomType;
       });

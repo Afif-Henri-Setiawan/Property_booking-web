@@ -19,7 +19,7 @@ function getAmenityIcon(name: string) {
 
 export default async function PropertyDetail({ params }: { params: Promise<{ id: string }> }) {
   // Fetch data from backend
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL as string;
   const { id } = await params;
   const res = await fetch(`${apiUrl}/properti/${id}`, { next: { revalidate: 0 } });
   
