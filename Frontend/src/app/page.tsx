@@ -232,9 +232,6 @@ export default async function Home() {
         <section className="px-4 md:px-16 max-w-7xl mx-auto mb-20">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-black">Jelajahi Tipe Properti</h2>
-            <Link href="/search" className="text-black font-semibold hover:underline flex items-center gap-1 text-sm">
-              Lihat Semua <ArrowRight size={16} />
-            </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div className="border border-gray-200 rounded-2xl p-6 flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer bg-white group">
