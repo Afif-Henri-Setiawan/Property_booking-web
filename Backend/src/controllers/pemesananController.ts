@@ -14,15 +14,17 @@ const generateNomorPemesanan = () => {
 // Validasi Zod
 export const createPemesananSchema = z.object({
   body: z.object({
-    tipeKamarId: z.string().uuid(),
-    paketHargaId: z.string().uuid(),
+    propertiId: z.string().uuid(),
     waktuCheckIn: z.string().datetime(),
     waktuCheckOut: z.string().datetime(),
     dewasa: z.number().min(1),
     anak: z.number().min(0).default(0),
     bayi: z.number().min(0).default(0),
-    // Untuk menyederhanakan MVP, kita paksa pesanan 1 unit kamar per transaksi agar unit bisa langsung di-assign
-    jumlahKamar: z.number().min(1).max(1, { message: 'Saat ini hanya mendukung pemesanan 1 kamar per transaksi' }),
+    kamar: z.array(z.object({
+      tipeKamarId: z.string().uuid(),
+      paketHargaId: z.string().uuid(),
+      jumlahKamar: z.number().min(1)
+    })).min(1, { message: 'Pilih minimal 1 kamar' }),
     tamuPemesanan: z.array(z.object({
       nama: z.string().min(2),
       email: z.string().email().optional(),
@@ -43,8 +45,8 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
   try {
     const tamuId = req.pengguna.id as string;
     const { 
-      tipeKamarId, paketHargaId, waktuCheckIn, waktuCheckOut, 
-      dewasa, anak, bayi, jumlahKamar, tamuPemesanan 
+      propertiId, waktuCheckIn, waktuCheckOut, 
+      dewasa, anak, bayi, kamar, tamuPemesanan 
     } = req.body;
 
     const checkInDate = new Date(waktuCheckIn);
@@ -58,94 +60,95 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
     const selisihWaktu = checkOutDate.getTime() - checkInDate.getTime();
     const jumlahMalam = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
 
-    // 1. Ambil data tipe kamar dan paket harga untuk validasi kapasitas & harga
-    const tipeKamar = await prisma.tipeKamar.findUnique({
-      where: { id: tipeKamarId, status: 'AKTIF' },
-      include: { properti: true }
-    });
+    let totalMaksDewasa = 0;
+    let totalMaksAnak = 0;
+    let totalSubtotal = 0;
+    const detailPemesanan = [];
 
-    if (!tipeKamar) {
-      return res.status(404).json({ status: 'error', message: 'Tipe kamar tidak ditemukan atau tidak aktif' });
-    }
+    // Validasi dan kalkulasi untuk setiap item di keranjang
+    for (const item of kamar) {
+      const tipeKamar = await prisma.tipeKamar.findUnique({
+        where: { id: item.tipeKamarId, propertiId, status: 'AKTIF' }
+      });
 
-    if (dewasa > tipeKamar.maksDewasa || anak > tipeKamar.maksAnak) {
-      return res.status(400).json({ status: 'error', message: 'Kapasitas kamar tidak mencukupi untuk jumlah tamu ini' });
-    }
+      if (!tipeKamar) {
+        return res.status(404).json({ status: 'error', message: `Tipe kamar ${item.tipeKamarId} tidak ditemukan atau tidak aktif` });
+      }
 
-    const paketHarga = await prisma.paketHarga.findUnique({
-      where: { id: paketHargaId, tipeKamarId, status: 'AKTIF' }
-    });
+      totalMaksDewasa += (tipeKamar.maksDewasa || 0) * item.jumlahKamar;
+      totalMaksAnak += (tipeKamar.maksAnak || 0) * item.jumlahKamar;
 
-    if (!paketHarga) {
-      return res.status(404).json({ status: 'error', message: 'Paket harga tidak valid' });
-    }
+      const paketHarga = await prisma.paketHarga.findUnique({
+        where: { id: item.paketHargaId, tipeKamarId: item.tipeKamarId, status: 'AKTIF' }
+      });
 
-    // 2. Cek Ketersediaan Unit Fisik dan alokasikan 1 unit yang kosong
-    const availableUnits = await prisma.unitKamar.findMany({
-      where: {
-        tipeKamarId,
-        status: 'TERSEDIA',
-        blokir: {
-          none: {
-            status: 'AKTIF',
-            tanggalMulai: { lt: checkOutDate },
-            tanggalSelesai: { gt: checkInDate }
-          }
-        },
-        pemesanan: {
-          none: {
-            status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] },
-            waktuCheckIn: { lt: checkOutDate },
-            waktuCheckOut: { gt: checkInDate }
-          }
+      if (!paketHarga) {
+        return res.status(404).json({ status: 'error', message: 'Paket harga tidak valid' });
+      }
+
+      // Cek Ketersediaan Unit Fisik
+      const countPemesanan = await prisma.unitKamar.count({
+        where: {
+          tipeKamarId: item.tipeKamarId,
+          status: 'TERSEDIA',
+          blokir: { none: { status: 'AKTIF', tanggalMulai: { lt: checkOutDate }, tanggalSelesai: { gt: checkInDate } } },
+          pemesanan: { none: { pemesanan: { status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] }, waktuCheckIn: { lt: checkOutDate }, waktuCheckOut: { gt: checkInDate } } } }
         }
-      },
-      take: 1
-    });
+      });
 
-    if (availableUnits.length < 1) {
-      return res.status(400).json({ status: 'error', message: 'Maaf, kamar tidak tersedia pada tanggal tersebut' });
+      if (countPemesanan < item.jumlahKamar) {
+        return res.status(400).json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} tidak tersedia dalam jumlah yang diminta` });
+      }
+
+      const hargaSatuan = Number(paketHarga.harga);
+      const subtotalItem = hargaSatuan * jumlahMalam * item.jumlahKamar;
+      totalSubtotal += subtotalItem;
+
+      detailPemesanan.push({
+        tipeKamarId: item.tipeKamarId,
+        paketHargaId: item.paketHargaId,
+        jumlahKamar: item.jumlahKamar,
+        hargaSatuan,
+        subtotal: subtotalItem
+      });
     }
 
-    const unitKamarId = availableUnits[0].id;
+    if (dewasa > totalMaksDewasa || anak > totalMaksAnak) {
+      return res.status(400).json({ status: 'error', message: 'Kapasitas total kamar tidak mencukupi untuk jumlah tamu ini' });
+    }
 
-    // 3. Hitung Harga
-    const hargaPerMalam = Number(paketHarga.harga);
-    const subtotal = hargaPerMalam * jumlahMalam;
-    const biayaLayanan = subtotal * 0.05; // Contoh 5% service charge
-    const pajak = subtotal * 0.11; // PPN 11%
-    const totalHarga = subtotal + biayaLayanan + pajak;
+    const biayaLayanan = totalSubtotal * 0.05; 
+    const pajak = totalSubtotal * 0.11; 
+    const totalHarga = totalSubtotal + biayaLayanan + pajak;
 
-    // 4. Buat Pemesanan dengan Transaction
     const pemesanan = await prisma.pemesanan.create({
       data: {
         nomorPemesanan: generateNomorPemesanan(),
         tamuId,
-        propertiId: tipeKamar.propertiId,
-        tipeKamarId,
-        unitKamarId,
-        paketHargaId,
+        propertiId,
         waktuCheckIn: checkInDate,
         waktuCheckOut: checkOutDate,
         dewasa,
         anak,
         bayi,
-        jumlahKamar: 1,
         jumlahMalam,
-        subtotal,
+        subtotal: totalSubtotal,
         biayaLayanan,
         pajak,
         totalHarga,
         status: 'MENUNGGU_PEMBAYARAN',
-        kadaluarsaPada: new Date(Date.now() + 60 * 60 * 1000), // 1 jam untuk bayar
+        kadaluarsaPada: new Date(Date.now() + 60 * 60 * 1000),
+        detail: {
+          create: detailPemesanan
+        },
         tamuPemesanan: {
           create: tamuPemesanan
         }
       },
       include: {
+        detail: { include: { tipeKamar: { select: { nama: true } } } },
         tamuPemesanan: true,
-        properti: { select: { nama: true } },
-        tipeKamar: { select: { nama: true } }
+        properti: { select: { nama: true } }
       }
     });
 
@@ -165,7 +168,7 @@ export const getMyBookings = async (req: AuthRequest, res: Response, next: NextF
       orderBy: { dibuatPada: 'desc' },
       include: {
         properti: { select: { nama: true, kota: true } },
-        tipeKamar: { select: { nama: true } }
+        detail: { include: { tipeKamar: { select: { nama: true } } } }
       }
     });
     res.json({ status: 'success', data: pemesanan });
@@ -193,7 +196,7 @@ export const getHostBookings = async (req: AuthRequest, res: Response, next: Nex
       orderBy: { dibuatPada: 'desc' },
       include: {
         properti: { select: { nama: true } },
-        tipeKamar: { select: { nama: true } },
+        detail: { include: { tipeKamar: { select: { nama: true } } } },
         tamu: { select: { nama: true, email: true } }
       }
     });
@@ -240,6 +243,7 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response, next:
 
 export const checkInSchema = z.object({
   body: z.object({
+    detailPemesananId: z.string().uuid({ message: "ID detail pemesanan wajib diisi" }),
     unitKamarId: z.string().uuid({ message: "ID unit kamar wajib diisi" })
   })
 });
@@ -247,38 +251,41 @@ export const checkInSchema = z.object({
 export const processPhysicalCheckIn = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const pemesananId = req.params.id as string;
-    const { unitKamarId } = req.body;
+    const { detailPemesananId, unitKamarId } = req.body;
     const penggunaId = req.pengguna.id as string;
     const peran = req.pengguna.peran;
 
     const pemesanan = await prisma.pemesanan.findUnique({
       where: { id: pemesananId },
-      include: { properti: true }
+      include: { properti: true, detail: true }
     });
 
     if (!pemesanan) {
       return res.status(404).json({ status: 'error', message: 'Pemesanan tidak ditemukan' });
     }
 
+    const detailItem = pemesanan.detail.find(d => d.id === detailPemesananId);
+    if (!detailItem) {
+      return res.status(404).json({ status: 'error', message: 'Detail pesanan tidak ditemukan' });
+    }
+
     if (pemesanan.properti.tuanRumahId !== penggunaId && peran !== 'ADMIN') {
       return res.status(403).json({ status: 'error', message: 'Hanya tuan rumah/admin yang bisa melakukan check-in' });
     }
 
-    if (pemesanan.status !== 'DIKONFIRMASI') {
-      return res.status(400).json({ status: 'error', message: 'Pemesanan belum dikonfirmasi atau sudah diproses' });
+    if (pemesanan.status !== 'DIKONFIRMASI' && pemesanan.status !== 'CHECK_IN') {
+      return res.status(400).json({ status: 'error', message: 'Pemesanan belum dikonfirmasi' });
     }
 
-    // Pastikan kamar benar-benar tersedia / bagian dari tipe kamar yang dipesan
     const unitKamar = await prisma.unitKamar.findUnique({
       where: { id: unitKamarId }
     });
 
-    if (!unitKamar || unitKamar.tipeKamarId !== pemesanan.tipeKamarId) {
+    if (!unitKamar || unitKamar.tipeKamarId !== detailItem.tipeKamarId) {
       return res.status(400).json({ status: 'error', message: 'Unit kamar tidak cocok atau tidak ditemukan' });
     }
 
     const transaction = await prisma.$transaction([
-      // 1. Buat log CheckIn
       prisma.checkIn.create({
         data: {
           pemesananId,
@@ -286,13 +293,13 @@ export const processPhysicalCheckIn = async (req: AuthRequest, res: Response, ne
           discanOleh: req.pengguna.nama || penggunaId
         }
       }),
-      // 2. Ubah status pemesanan
+      prisma.detailPemesanan.update({
+        where: { id: detailPemesananId },
+        data: { unitKamarId }
+      }),
       prisma.pemesanan.update({
         where: { id: pemesananId },
-        data: {
-          status: 'CHECK_IN',
-          unitKamarId // Assign tamu secara fisik ke kamar tersebut
-        }
+        data: { status: 'CHECK_IN' }
       })
     ]);
 
@@ -305,15 +312,18 @@ export const processPhysicalCheckIn = async (req: AuthRequest, res: Response, ne
 
 export const createWalkInBookingSchema = z.object({
   body: z.object({
-    tipeKamarId: z.string().uuid(),
-    paketHargaId: z.string().uuid(),
+    propertiId: z.string().uuid(),
     waktuCheckIn: z.string().datetime(),
     waktuCheckOut: z.string().datetime(),
     dewasa: z.number().min(1),
     anak: z.number().min(0).default(0),
     bayi: z.number().min(0).default(0),
-    jumlahKamar: z.number().min(1).max(1),
     metodePembayaran: z.string().min(1, { message: "Metode pembayaran wajib diisi" }),
+    kamar: z.array(z.object({
+      tipeKamarId: z.string().uuid(),
+      paketHargaId: z.string().uuid(),
+      jumlahKamar: z.number().min(1).max(1)
+    })).min(1),
     tamuPemesanan: z.array(z.object({
       nama: z.string().min(2),
       email: z.string().email().optional(),
@@ -327,8 +337,8 @@ export const createWalkInBooking = async (req: AuthRequest, res: Response, next:
   try {
     const resepsionisId = req.pengguna.id as string;
     const {
-      tipeKamarId, paketHargaId, waktuCheckIn, waktuCheckOut,
-      dewasa, anak, bayi, jumlahKamar, metodePembayaran, tamuPemesanan
+      propertiId, waktuCheckIn, waktuCheckOut,
+      dewasa, anak, bayi, metodePembayaran, tamuPemesanan, kamar
     } = req.body;
 
     const checkInDate = new Date(waktuCheckIn);
@@ -340,44 +350,54 @@ export const createWalkInBooking = async (req: AuthRequest, res: Response, next:
 
     const selisihWaktu = checkOutDate.getTime() - checkInDate.getTime();
     const jumlahMalam = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
+    
+    let totalSubtotal = 0;
+    const detailPemesanan = [];
 
-    const tipeKamar = await prisma.tipeKamar.findUnique({
-      where: { id: tipeKamarId, status: 'AKTIF' },
-      include: { properti: true, unit: { include: { blokir: true, pemesanan: true } } }
-    });
+    for (const item of kamar) {
+      const tipeKamar = await prisma.tipeKamar.findUnique({
+        where: { id: item.tipeKamarId, propertiId, status: 'AKTIF' },
+        include: { properti: true, unit: { include: { blokir: true, pemesanan: { include: { pemesanan: true } } } } }
+      });
 
-    if (!tipeKamar) {
-      return res.status(404).json({ status: 'error', message: 'Tipe kamar tidak ditemukan' });
-    }
+      if (!tipeKamar) return res.status(404).json({ status: 'error', message: 'Tipe kamar tidak ditemukan' });
+      if (tipeKamar.properti.tuanRumahId !== resepsionisId && req.pengguna.peran !== 'ADMIN') return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
 
-    if (tipeKamar.properti.tuanRumahId !== resepsionisId && req.pengguna.peran !== 'ADMIN') {
-       return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
-    }
+      const paketHarga = await prisma.paketHarga.findUnique({
+        where: { id: item.paketHargaId, tipeKamarId: item.tipeKamarId, status: 'AKTIF' }
+      });
 
-    const paketHarga = await prisma.paketHarga.findUnique({
-      where: { id: paketHargaId, tipeKamarId, status: 'AKTIF' }
-    });
+      if (!paketHarga) return res.status(404).json({ status: 'error', message: 'Paket harga tidak valid' });
 
-    if (!paketHarga) return res.status(404).json({ status: 'error', message: 'Paket harga tidak valid' });
-
-    let unitKamarId: string | null = null;
-    for (const unit of tipeKamar.unit) {
-      const isBlocked = unit.blokir.some(b => b.tanggalMulai < checkOutDate && b.tanggalSelesai > checkInDate);
-      const isBooked = unit.pemesanan.some(p => p.status !== 'DIBATALKAN' && p.status !== 'DIKEMBALIKAN' && p.waktuCheckIn < checkOutDate && p.waktuCheckOut > checkInDate);
-      if (!isBlocked && !isBooked) {
-        unitKamarId = unit.id;
-        break;
+      let unitKamarId: string | null = null;
+      for (const unit of tipeKamar.unit) {
+        const isBlocked = unit.blokir.some(b => b.tanggalMulai < checkOutDate && b.tanggalSelesai > checkInDate);
+        const isBooked = unit.pemesanan.some(p => p.pemesanan.status !== 'DIBATALKAN' && p.pemesanan.status !== 'DIKEMBALIKAN' && p.pemesanan.waktuCheckIn < checkOutDate && p.pemesanan.waktuCheckOut > checkInDate);
+        if (!isBlocked && !isBooked) {
+          unitKamarId = unit.id;
+          break;
+        }
       }
+
+      if (!unitKamarId) return res.status(400).json({ status: 'error', message: 'Kamar tidak tersedia pada tanggal tersebut' });
+
+      const hargaSatuan = Number(paketHarga.harga);
+      const subtotalItem = hargaSatuan * jumlahMalam * item.jumlahKamar;
+      totalSubtotal += subtotalItem;
+      
+      detailPemesanan.push({
+        tipeKamarId: item.tipeKamarId,
+        paketHargaId: item.paketHargaId,
+        unitKamarId,
+        jumlahKamar: item.jumlahKamar,
+        hargaSatuan,
+        subtotal: subtotalItem
+      });
     }
 
-    if (!unitKamarId) {
-      return res.status(400).json({ status: 'error', message: 'Kamar tidak tersedia pada tanggal tersebut' });
-    }
-
-    const subtotal = Number(paketHarga.harga) * jumlahMalam;
     const biayaLayanan = 0; // Bebas biaya layanan online
-    const pajak = subtotal * 0.11;
-    const totalHarga = subtotal + biayaLayanan + pajak;
+    const pajak = totalSubtotal * 0.11;
+    const totalHarga = totalSubtotal + biayaLayanan + pajak;
     const nomorPemesanan = generateNomorPemesanan();
 
     const transaction = await prisma.$transaction(async (tx) => {
@@ -385,15 +405,13 @@ export const createWalkInBooking = async (req: AuthRequest, res: Response, next:
         data: {
           nomorPemesanan,
           tamuId: resepsionisId, // ID Kasir
-          propertiId: tipeKamar.propertiId,
-          tipeKamarId,
-          unitKamarId,
-          paketHargaId,
+          propertiId,
           waktuCheckIn: checkInDate,
           waktuCheckOut: checkOutDate,
-          dewasa, anak, bayi, jumlahKamar, jumlahMalam,
-          subtotal, biayaLayanan, pajak, totalHarga,
+          dewasa, anak, bayi, jumlahMalam,
+          subtotal: totalSubtotal, biayaLayanan, pajak, totalHarga,
           status: 'DIKONFIRMASI', // Langsung terkonfirmasi
+          detail: { create: detailPemesanan },
           tamuPemesanan: { create: tamuPemesanan }
         },
         include: { tamuPemesanan: true }
@@ -428,7 +446,7 @@ export const getTiketByNomor = async (req: Request, res: Response, next: NextFun
       include: {
         tamuPemesanan: true,
         properti: { select: { nama: true, kota: true } },
-        tipeKamar: { select: { nama: true } },
+        detail: { include: { tipeKamar: { select: { nama: true } } } },
         pembayaran: true
       }
     });

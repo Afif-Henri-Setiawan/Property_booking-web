@@ -3,15 +3,11 @@ model Pemesanan {
   nomorPemesanan String          @unique
   tamuId         String
   propertiId     String
-  tipeKamarId    String
-  unitKamarId    String?
-  paketHargaId   String
   waktuCheckIn   DateTime
   waktuCheckOut  DateTime
   dewasa         Int
   anak           Int             @default(0)
   bayi           Int             @default(0)
-  jumlahKamar    Int             @default(1)
   jumlahMalam    Int
   subtotal       Decimal         @db.Decimal(12, 2)
   biayaLayanan   Decimal         @db.Decimal(12, 2)
@@ -25,14 +21,28 @@ model Pemesanan {
 
   tamu       Pengguna   @relation(fields: [tamuId], references: [id], onDelete: Restrict)
   properti   Properti   @relation(fields: [propertiId], references: [id], onDelete: Restrict)
-  tipeKamar  TipeKamar  @relation(fields: [tipeKamarId], references: [id], onDelete: Restrict)
-  unitKamar  UnitKamar? @relation(fields: [unitKamarId], references: [id], onDelete: SetNull)
-  paketHarga PaketHarga @relation(fields: [paketHargaId], references: [id], onDelete: Restrict)
 
+  detail        DetailPemesanan[]
   tamuPemesanan TamuPemesanan[]
   pembayaran    Pembayaran?
   ulasan        Ulasan?
-  dataCheckIn   CheckIn?
+  dataCheckIn   CheckIn[]
+}
+
+model DetailPemesanan {
+  id             String     @id @default(uuid())
+  pemesananId    String
+  tipeKamarId    String
+  unitKamarId    String?    // Diisi saat check-in atau alokasi kamar
+  paketHargaId   String
+  jumlahKamar    Int        @default(1)
+  hargaSatuan    Decimal    @db.Decimal(12, 2)
+  subtotal       Decimal    @db.Decimal(12, 2)
+  
+  pemesanan      Pemesanan  @relation(fields: [pemesananId], references: [id], onDelete: Cascade)
+  tipeKamar      TipeKamar  @relation(fields: [tipeKamarId], references: [id], onDelete: Restrict)
+  unitKamar      UnitKamar? @relation(fields: [unitKamarId], references: [id], onDelete: SetNull)
+  paketHarga     PaketHarga @relation(fields: [paketHargaId], references: [id], onDelete: Restrict)
 }
 
 model TamuPemesanan {
@@ -47,11 +57,11 @@ model TamuPemesanan {
 }
 
 model CheckIn {
-  id           String   @id @default(uuid())
-  pemesananId  String   @unique
-  unitKamarId  String
-  discanOleh   String?
-  waktuCheckIn DateTime @default(now())
+  id               String   @id @default(uuid())
+  pemesananId      String   
+  unitKamarId      String
+  discanOleh       String?
+  waktuCheckIn     DateTime @default(now())
 
   pemesanan Pemesanan @relation(fields: [pemesananId], references: [id], onDelete: Cascade)
   unitKamar UnitKamar @relation(fields: [unitKamarId], references: [id], onDelete: Cascade)

@@ -98,7 +98,15 @@ export const getPropertiById = async (req: Request, res: Response, next: NextFun
         fasilitas: { include: { fasilitas: true } },
         foto: true,
         tuanRumah: { select: { id: true, nama: true, email: true } },
-        tipeKamar: true,
+        tipeKamar: {
+          include: {
+            kasur: {
+              include: {
+                tipeKasur: true
+              }
+            }
+          }
+        },
       },
     });
 
