@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Calendar, MapPin, Building, CreditCard, ChevronRight } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 
 interface Booking {
   id: string;
@@ -21,21 +22,18 @@ interface Booking {
 }
 
 export default function BookingsPage() {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
+      if (!isLoaded || !isSignedIn) return;
+
       try {
-        // In a real app with Clerk + Custom Backend, you'd sync the user 
-        // or pass a custom token here.
-        // For now, we try to fetch from the API. If it fails (e.g. 401), 
-        // we show empty or mock data.
         const apiUrl = process.env.NEXT_PUBLIC_API_URL as string;
-        
-        // Try getting the token from local storage (if custom auth is used)
-        const token = localStorage.getItem('token'); 
+        const token = await getToken();
         
         const res = await fetch(`${apiUrl}/pemesanan/my-bookings`, {
           headers: {
@@ -96,7 +94,7 @@ export default function BookingsPage() {
     };
 
     fetchBookings();
-  }, []);
+  }, [isLoaded, isSignedIn, getToken]);
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Wallet, Building2, Check, ShieldCheck, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 interface CheckoutClientProps {
   propertyId: string;
@@ -22,12 +22,25 @@ interface CheckoutClientProps {
 export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, cartDetails }: CheckoutClientProps) {
   const router = useRouter();
   const { getToken } = useAuth();
+  const { user, isLoaded } = useUser();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
   const [telepon, setTelepon] = useState("");
+
+  // Pre-fill user data when loaded
+  useEffect(() => {
+    if (isLoaded && user) {
+      if (!nama && user.fullName) {
+        setNama(user.fullName);
+      }
+      if (!email && user.primaryEmailAddress) {
+        setEmail(user.primaryEmailAddress.emailAddress);
+      }
+    }
+  }, [isLoaded, user]);
 
   const handleConfirm = async () => {
     if (!nama || !email || !telepon) {
