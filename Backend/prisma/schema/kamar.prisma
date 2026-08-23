@@ -19,7 +19,7 @@ model TipeKamar {
   kasur      KasurTipeKamar[]
   paketHarga PaketHarga[]
   unit       UnitKamar[]
-  pemesanan  Pemesanan[]
+  pemesanan  DetailPemesanan[]
 }
 
 model FotoTipeKamar {
@@ -72,7 +72,7 @@ model PaketHarga {
   diperbaruiPada      DateTime         @updatedAt
 
   tipeKamar TipeKamar   @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
-  pemesanan Pemesanan[]
+  pemesanan DetailPemesanan[]
 }
 
 enum StatusTipeKamar {

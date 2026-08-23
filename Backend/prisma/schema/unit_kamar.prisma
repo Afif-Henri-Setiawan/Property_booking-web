@@ -9,7 +9,7 @@ model UnitKamar {
 
   tipeKamar TipeKamar            @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
   blokir    BlokirKetersediaan[]
-  pemesanan Pemesanan[]
+  pemesanan DetailPemesanan[]
   checkIn   CheckIn[]
 }
 

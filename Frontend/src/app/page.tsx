@@ -475,9 +475,6 @@ export default async function Home() {
 
         <div className="px-4 md:px-16 max-w-7xl mx-auto mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">© 2024 StayNest. Hak cipta dilindungi.</p>
-          <div className="flex gap-1 text-gray-400 text-sm items-center">
-            Didesain dengan <Heart size={14} className="text-red-500 fill-red-500 mx-1" /> untuk rumah impian Anda
-          </div>
         </div>
       </footer>
     </div>

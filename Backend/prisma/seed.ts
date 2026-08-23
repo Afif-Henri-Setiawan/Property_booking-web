@@ -37,6 +37,7 @@ async function main() {
   const typeVilla = await prisma.tipeProperti.create({ data: { nama: 'Villa', slug: 'villa' } });
   const typeResort = await prisma.tipeProperti.create({ data: { nama: 'Resort', slug: 'resort' } });
   const typeCabin = await prisma.tipeProperti.create({ data: { nama: 'Cabin', slug: 'cabin' } });
+  const typeHotel = await prisma.tipeProperti.create({ data: { nama: 'Hotel', slug: 'hotel' } });
 
   console.log('Seeding Fasilitas...');
   const fasWifi = await prisma.fasilitas.create({ data: { nama: 'Fast Wi-Fi', ikon: 'wifi' } });
@@ -47,6 +48,7 @@ async function main() {
   console.log('Seeding TipeKasur...');
   const kingBed = await prisma.tipeKasur.create({ data: { nama: 'King Size', deskripsi: 'Extra large comfortable bed' } });
   const queenBed = await prisma.tipeKasur.create({ data: { nama: 'Queen Size', deskripsi: 'Large comfortable bed' } });
+  const twinBed = await prisma.tipeKasur.create({ data: { nama: 'Twin Bed', deskripsi: 'Single comfortable bed' } });
 
   console.log('Seeding Properti...');
   const prop1 = await prisma.properti.create({
@@ -119,6 +121,35 @@ async function main() {
       foto: {
         create: [
           { url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCy3Ps_CdX2BN15cVk11qpxXxWNqfx1ovXW3n7BAsV2Kj5UIB8PJ6tp_o_TN3FaV6I-hlMVGaZW1Hlc-5Ery-PgRSoGPiusalxxlUSc_d43ScEV_-mq00P-PR5QaDvTbICy3C4E1fwsFmR41I08OjomlSZFxV3ImT55aX7CtbPMrLJ3pdaBf-Wx3aUN5YuNb77E7MhkNmGCrjlz7jkm_xdLWjE2JzNBJ77rpT9--uMO5P7ClsPOV7Wr', isUtama: true }
+        ]
+      }
+    }
+  });
+
+  const prop4 = await prisma.properti.create({
+    data: {
+      tuanRumahId: host2.id,
+      tipePropertiId: typeHotel.id,
+      nama: 'Grand Plaza Hotel',
+      deskripsi: 'Experience luxury and comfort in the heart of the city.',
+      alamat: 'Jl. Jend. Sudirman No. 1',
+      kota: 'Jakarta',
+      provinsi: 'DKI Jakarta',
+      negara: 'Indonesia',
+      status: StatusProperti.DITERBITKAN,
+      waktuCheckIn: '14:00',
+      waktuCheckOut: '12:00',
+      foto: {
+        create: [
+          { url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', isUtama: true },
+          { url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', isUtama: false }
+        ]
+      },
+      fasilitas: {
+        create: [
+          { fasilitasId: fasWifi.id },
+          { fasilitasId: fasPool.id },
+          { fasilitasId: fasParking.id }
         ]
       }
     }
@@ -211,25 +242,127 @@ async function main() {
     }
   });
 
+  const roomType4 = await prisma.tipeKamar.create({
+    data: {
+      propertiId: prop4.id,
+      nama: 'Executive Twin Room',
+      deskripsi: 'Kamar luas dengan 2 tempat tidur twin yang sangat nyaman, cocok untuk Anda yang bepergian dengan rekan kerja.',
+      hargaDasar: 1200000.00,
+      maksDewasa: 2,
+      maksAnak: 1,
+      maksTamu: 3,
+      ukuranKamar: 32,
+      totalUnit: 5,
+      kasur: {
+        create: [
+          { tipeKasurId: twinBed.id, jumlah: 2 }
+        ]
+      },
+      paketHarga: {
+        create: [
+          { nama: 'Room Only', harga: 1200000.00 },
+          { nama: 'With Breakfast', harga: 1400000.00, termasukSarapan: true }
+        ]
+      },
+      unit: {
+        create: [
+          { nomorUnit: '101' },
+          { nomorUnit: '102' },
+          { nomorUnit: '103' },
+          { nomorUnit: '104' },
+          { nomorUnit: '105' }
+        ]
+      }
+    }
+  });
+
+  const roomType1_2 = await prisma.tipeKamar.create({
+    data: {
+      propertiId: prop1.id,
+      nama: 'Standard Room',
+      deskripsi: 'Kamar nyaman yang ideal untuk pasangan atau wisatawan solo.',
+      hargaDasar: 2500000.00,
+      maksDewasa: 2,
+      maksAnak: 0,
+      maksTamu: 2,
+      ukuranKamar: 24,
+      totalUnit: 3,
+      kasur: {
+        create: [
+          { tipeKasurId: queenBed.id, jumlah: 1 }
+        ]
+      },
+      paketHarga: {
+        create: [
+          { nama: 'Room Only', harga: 2500000.00 }
+        ]
+      },
+      unit: {
+        create: [
+          { nomorUnit: '102A' },
+          { nomorUnit: '103A' },
+          { nomorUnit: '104A' }
+        ]
+      }
+    }
+  });
+
+  const roomType4_2 = await prisma.tipeKamar.create({
+    data: {
+      propertiId: prop4.id,
+      nama: 'Presidential Suite',
+      deskripsi: 'Kamar super mewah dengan pemandangan kota terbaik, ruang tamu terpisah, dan layanan butler 24 jam.',
+      hargaDasar: 8000000.00,
+      maksDewasa: 2,
+      maksAnak: 2,
+      maksTamu: 4,
+      ukuranKamar: 80,
+      totalUnit: 1,
+      kasur: {
+        create: [
+          { tipeKasurId: kingBed.id, jumlah: 1 }
+        ]
+      },
+      paketHarga: {
+        create: [
+          { nama: 'All Inclusive', harga: 8000000.00, termasukSarapan: true }
+        ]
+      },
+      unit: {
+        create: [
+          { nomorUnit: 'Penthouse 1' }
+        ]
+      }
+    }
+  });
+
   console.log('Seeding Pemesanan, Pembayaran, CheckIn, Ulasan...');
   const pemesanan = await prisma.pemesanan.create({
     data: {
       nomorPemesanan: 'ORD-12345',
       tamuId: tamu.id,
       propertiId: prop1.id,
-      tipeKamarId: roomType1.id,
-      unitKamarId: roomType1.unit[0].id,
-      paketHargaId: roomType1.paketHarga[0].id,
       waktuCheckIn: new Date(new Date().getTime() + 86400000), // tomorrow
       waktuCheckOut: new Date(new Date().getTime() + 86400000 * 3), // +3 days
       dewasa: 2,
-      jumlahKamar: 1,
       jumlahMalam: 2,
       subtotal: 9000000.00,
       biayaLayanan: 1000000.00,
       pajak: 500000.00,
       totalHarga: 10500000.00,
       status: StatusPemesanan.DIKONFIRMASI,
+      detail: {
+        create: [
+          {
+            tipeKamarId: roomType1.id,
+            paketHargaId: roomType1.paketHarga[0].id,
+            unitKamarId: roomType1.unit[0].id,
+            jumlahKamar: 1,
+            hargaSatuan: 4500000.00,
+            subtotal: 9000000.00
+          }
+        ]
+      },
       tamuPemesanan: {
         create: [
           { nama: 'John Doe', tipeTamu: TipeTamu.DEWASA }
@@ -243,9 +376,11 @@ async function main() {
         }
       },
       dataCheckIn: {
-        create: {
-          unitKamarId: roomType1.unit[0].id
-        }
+        create: [
+          {
+            unitKamarId: roomType1.unit[0].id
+          }
+        ]
       }
     }
   });
