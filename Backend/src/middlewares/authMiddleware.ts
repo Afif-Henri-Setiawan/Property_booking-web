@@ -1,12 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { verifyToken, createClerkClient } from '@clerk/clerk-sdk-node';
+import { PrismaClient } from '@prisma/client';
 import { logger } from '../utils/logger';
+
+const prisma = new PrismaClient();
+
+const clerk = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+});
 
 export interface AuthRequest extends Request {
   pengguna?: any;
 }
 
-export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
   let token;
 
   if (
@@ -22,11 +30,41 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    req.pengguna = decoded;
+    const decoded = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+    
+    // Get full user details from Clerk
+    const clerkUser = await clerk.users.getUser(decoded.sub);
+    const primaryEmail = clerkUser.emailAddresses.find(
+      (e) => e.id === clerkUser.primaryEmailAddressId
+    )?.emailAddress;
+
+    if (!primaryEmail) {
+      throw new Error("No primary email found for Clerk user");
+    }
+
+    // Find or create user in our DB
+    let pengguna = await prisma.pengguna.findUnique({
+      where: { email: primaryEmail }
+    });
+
+    if (!pengguna) {
+      const nama = clerkUser.fullName || clerkUser.firstName || "Tamu";
+      pengguna = await prisma.pengguna.create({
+        data: {
+          email: primaryEmail,
+          nama: nama,
+          kataSandi: "CLERK_MANAGED_OAUTH",
+          peran: 'TAMU'
+        }
+      });
+    }
+
+    req.pengguna = pengguna;
     next();
   } catch (error) {
-    logger.error({ err: error }, 'Akses ditolak: Token tidak valid');
+    logger.error({ err: error }, 'Akses ditolak: Token Clerk tidak valid');
     res.status(401).json({ status: 'error', message: 'Tidak diotorisasi, token tidak valid' });
   }
 };
