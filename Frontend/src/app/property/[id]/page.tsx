@@ -5,6 +5,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PropertyDetailsClient from "@/components/property/PropertyDetailsClient";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 export default async function PropertyDetail(props: { params: Promise<{ id: string }> }) {
   // Fetch data from backend
@@ -35,10 +36,11 @@ export default async function PropertyDetail(props: { params: Promise<{ id: stri
   ];
 
   return (
-    <div className="bg-surface font-sans text-on-surface antialiased min-h-screen pb-20">
-      <TopNavBar />
+    <AuthGuard>
+      <div className="bg-surface font-sans text-on-surface antialiased min-h-screen pb-20">
+        <TopNavBar />
 
-      <main className="pt-28 px-4 md:px-16 max-w-7xl mx-auto">
+        <main className="pt-28 px-4 md:px-16 max-w-7xl mx-auto">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link href="/" className="hover:text-primary transition-colors">Beranda</Link>
@@ -112,6 +114,7 @@ export default async function PropertyDetail(props: { params: Promise<{ id: stri
         <PropertyDetailsClient property={property} />
 
       </main>
-    </div>
+      </div>
+    </AuthGuard>
   );
 }
