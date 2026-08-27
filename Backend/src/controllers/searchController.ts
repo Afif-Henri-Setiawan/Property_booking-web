@@ -78,15 +78,17 @@ export const searchProperti = async (req: Request, res: Response, next: NextFunc
                 },
                 pemesanan: {
                   where: tanggalMulai && tanggalSelesai ? {
-                    status: {
-                      in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN']
-                    },
-                    OR: [
-                      {
-                        waktuCheckIn: { lt: tanggalSelesai },
-                        waktuCheckOut: { gt: tanggalMulai }
-                      }
-                    ]
+                    pemesanan: {
+                      status: {
+                        in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN']
+                      },
+                      OR: [
+                        {
+                          waktuCheckIn: { lt: tanggalSelesai },
+                          waktuCheckOut: { gt: tanggalMulai }
+                        }
+                      ]
+                    }
                   } : undefined
                 }
               }

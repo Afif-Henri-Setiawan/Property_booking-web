@@ -75,7 +75,11 @@ export const getUlasanByProperti = async (req: Request, res: Response, next: Nex
         pengguna: { select: { nama: true } },
         pemesanan: {
           select: {
-            tipeKamar: { select: { nama: true } }
+            detail: {
+              select: {
+                tipeKamar: { select: { nama: true } }
+              }
+            }
           }
         }
       }
