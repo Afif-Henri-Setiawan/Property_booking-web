@@ -147,7 +147,7 @@ export default async function Home() {
         </section>
 
         {/* 4 Feature Row */}
-        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
+        <section id="layanan" className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
               <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
@@ -189,7 +189,7 @@ export default async function Home() {
         </section>
 
         {/* More Than Just A Property Section */}
-        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
+        <section id="tentang-kami" className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             <div className="lg:w-5/12 flex flex-col gap-6">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Mengapa Memilih StayNest</span>
@@ -230,7 +230,7 @@ export default async function Home() {
         </section>
 
         {/* Explore Property Types */}
-        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-20">
+        <section id="tipe-properti" className="px-4 md:px-16 max-w-7xl mx-auto mb-20">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-black">Jelajahi Tipe Properti</h2>
           </div>
@@ -284,7 +284,7 @@ export default async function Home() {
         </section>
 
         {/* Featured Properties */}
-        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
+        <section id="properti-pilihan" className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-black">Properti Pilihan</h2>
             <Link href="/search" className="text-black font-semibold hover:underline flex items-center gap-1 text-sm">
@@ -357,7 +357,7 @@ export default async function Home() {
 
 
         {/* Testimonials Section */}
-        <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
+        <section id="ulasan" className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-3xl font-bold text-black">Apa Kata Klien Kami</h2>
             <div className="flex gap-4">
@@ -422,7 +422,7 @@ export default async function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-20 bg-[#111827] border-t border-gray-800 text-white">
+      <footer id="kontak" className="w-full py-20 bg-[#111827] border-t border-gray-800 text-white">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12 px-4 md:px-16 max-w-7xl mx-auto">
           {/* Brand Column */}
           <div className="col-span-1 md:col-span-2 flex flex-col gap-6">
