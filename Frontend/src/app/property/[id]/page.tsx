@@ -1,4 +1,5 @@
 import TopNavBar from "@/components/layout/TopNavBar";
+export const dynamic = 'force-dynamic';
 import {
   Star, Share, Heart, MapPin, ChevronRight, ShieldCheck
 } from "lucide-react";

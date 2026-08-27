@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+export const dynamic = 'force-dynamic';
 import TopNavBar from "@/components/layout/TopNavBar";
 import DateRangeInputs from "@/components/search/DateRangeInputs";
 import { MapPin, Star, Bed, Bath, Users, Heart } from "lucide-react";
