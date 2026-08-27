@@ -32,7 +32,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
   try {
     const decoded = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    } as any);
     
     // Get full user details from Clerk
     const clerkUser = await clerk.users.getUser(decoded.sub);
@@ -50,7 +50,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     });
 
     if (!pengguna) {
-      const nama = clerkUser.fullName || clerkUser.firstName || "Tamu";
+      const nama = clerkUser.firstName ? (clerkUser.firstName + ' ' + (clerkUser.lastName || '')).trim() : "Tamu";
       pengguna = await prisma.pengguna.create({
         data: {
           email: primaryEmail,

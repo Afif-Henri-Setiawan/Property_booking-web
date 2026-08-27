@@ -352,7 +352,7 @@ export const createWalkInBooking = async (req: AuthRequest, res: Response, next:
     const jumlahMalam = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
     
     let totalSubtotal = 0;
-    const detailPemesanan = [];
+    const detailPemesanan: any[] = [];
 
     for (const item of kamar) {
       const tipeKamar = await prisma.tipeKamar.findUnique({
