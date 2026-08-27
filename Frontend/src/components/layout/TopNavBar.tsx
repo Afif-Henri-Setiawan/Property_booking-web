@@ -23,11 +23,10 @@ export default async function TopNavBar() {
         {/* Nav Links (Desktop) */}
         <div className="hidden md:flex items-center gap-8 font-medium text-sm text-gray-500">
           <Link href="/" className="text-[#1E2A4F] font-semibold">Beranda</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Daftar Properti</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Layanan</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Favorit</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Blog</Link>
-          <Link href="#" className="hover:text-[#1E2A4F] transition-colors">Tentang Kami</Link>
+          <Link href="/#layanan" className="hover:text-[#1E2A4F] transition-colors">Layanan</Link>
+          <Link href="/#properti-pilihan" className="hover:text-[#1E2A4F] transition-colors">Daftar Properti</Link>
+          <Link href="/#ulasan" className="hover:text-[#1E2A4F] transition-colors">Ulasan</Link>
+          <Link href="/#kontak" className="hover:text-[#1E2A4F] transition-colors">Kontak Kami</Link>
         </div>
 
         {/* Actions */}
