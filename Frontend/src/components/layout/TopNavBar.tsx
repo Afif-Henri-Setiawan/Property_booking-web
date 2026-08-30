@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { PlusCircle, Home as HomeIcon, ClipboardList, LayoutDashboard } from "lucide-react";
+
+import CustomUserButton from "./CustomUserButton";
 
 export default async function TopNavBar() {
   const { userId } = await auth();
@@ -40,20 +42,7 @@ export default async function TopNavBar() {
                 <PlusCircle size={20} />
                 Dashboard
               </Link>
-              <UserButton>
-                <UserButton.MenuItems>
-                  <UserButton.Link
-                    label="Pesanan Saya"
-                    labelIcon={<ClipboardList size={15} />}
-                    href="/user/bookings"
-                  />
-                  <UserButton.Link
-                    label="Host Dashboard"
-                    labelIcon={<LayoutDashboard size={15} />}
-                    href="/host/dashboard"
-                  />
-                </UserButton.MenuItems>
-              </UserButton>
+              <CustomUserButton />
             </>
           ) : (
             <div className="flex items-center gap-4">

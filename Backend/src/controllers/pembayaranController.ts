@@ -3,10 +3,11 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { snap } from '../utils/midtrans';
 
 const prisma = new PrismaClient();
 
-// Validasi Webhook Mockup
+// Validasi Webhook
 export const webhookSchema = z.object({
   body: z.object({
     order_id: z.string(),
@@ -24,7 +25,8 @@ export const buatPembayaran = async (req: AuthRequest, res: Response, next: Next
     const tamuId = req.pengguna.id as string;
 
     const pemesanan = await prisma.pemesanan.findUnique({
-      where: { id: pemesananId }
+      where: { id: pemesananId },
+      include: { tamu: true, properti: true }
     });
 
     if (!pemesanan) {
@@ -39,19 +41,19 @@ export const buatPembayaran = async (req: AuthRequest, res: Response, next: Next
       return res.status(400).json({ status: 'error', message: 'Status pesanan saat ini tidak dapat dibayar' });
     }
 
-    // Cek apakah sudah ada percobaan pembayaran sebelumnya
     let pembayaran = await prisma.pembayaran.findUnique({
       where: { pemesananId }
     });
 
     const orderIdMidtrans = `ORDER-${pemesanan.nomorPemesanan}-${Date.now()}`;
+    const jumlahBiaya = Math.round(Number(pemesanan.totalHarga)); // Midtrans expects integer/number for IDR
 
     if (pembayaran) {
       pembayaran = await prisma.pembayaran.update({
         where: { pemesananId },
         data: {
           orderIdMidtrans,
-          jumlah: pemesanan.totalHarga,
+          jumlah: jumlahBiaya,
           statusTransaksi: 'pending'
         }
       });
@@ -60,23 +62,37 @@ export const buatPembayaran = async (req: AuthRequest, res: Response, next: Next
         data: {
           pemesananId,
           orderIdMidtrans,
-          jumlah: pemesanan.totalHarga,
+          jumlah: jumlahBiaya,
           statusTransaksi: 'pending'
         }
       });
     }
 
-    // Simulasi respons dari Payment Gateway (Midtrans)
-    const mockupMidtransResponse = {
-      token: `SIMULATION-TOKEN-${orderIdMidtrans}`,
-      redirect_url: `https://app.sandbox.midtrans.com/snap/v2/vtweb/SIMULATION-${orderIdMidtrans}`
+    // Buat parameter transaksi Midtrans
+    const parameter = {
+      transaction_details: {
+        order_id: orderIdMidtrans,
+        gross_amount: jumlahBiaya
+      },
+      customer_details: {
+        first_name: pemesanan.tamu.nama,
+        email: pemesanan.tamu.email
+      },
+      item_details: [{
+        id: pemesanan.propertiId,
+        price: jumlahBiaya,
+        quantity: 1,
+        name: `Pemesanan ${pemesanan.properti.nama}`.substring(0, 50)
+      }]
     };
+
+    const transaction = await snap.createTransaction(parameter);
 
     res.json({
       status: 'success',
       data: {
         pembayaran,
-        paymentGateway: mockupMidtransResponse
+        paymentGateway: transaction // contains token and redirect_url
       }
     });
   } catch (error) {

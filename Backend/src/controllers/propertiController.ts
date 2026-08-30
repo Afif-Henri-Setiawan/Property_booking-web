@@ -100,6 +100,7 @@ export const getPropertiById = async (req: Request, res: Response, next: NextFun
         tuanRumah: { select: { id: true, nama: true, email: true } },
         tipeKamar: {
           include: {
+            paketHarga: true,
             kasur: {
               include: {
                 tipeKasur: true

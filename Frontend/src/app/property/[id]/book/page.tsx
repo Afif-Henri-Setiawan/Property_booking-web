@@ -84,8 +84,9 @@ export default async function BookPage(props: {
   });
 
   const subtotal = basePricePerNight * nights;
-  const serviceFee = subtotal * 0.05; // Example 5% service fee
-  const total = subtotal + serviceFee;
+  const serviceFee = subtotal * 0.05; // 5% service fee
+  const tax = subtotal * 0.11; // 11% tax
+  const total = subtotal + serviceFee + tax;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
@@ -164,6 +165,10 @@ export default async function BookPage(props: {
                 <div className="flex justify-between">
                   <span className="text-slate-500">Biaya Layanan (5%)</span>
                   <span className="font-medium">{formatPrice(serviceFee)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Pajak (11%)</span>
+                  <span className="font-medium">{formatPrice(tax)}</span>
                 </div>
                 <div className="flex justify-between border-t border-slate-200 pt-3 mt-3">
                   <span className="font-bold text-forest-900 text-base">Total Keseluruhan</span>
