@@ -204,13 +204,13 @@ export const getHostBookings = async (req: AuthRequest, res: Response, next: Nex
 
     const hostId = req.pengguna.id as string;
     
-    // Cari semua properti milik host
-    const myProperties = await prisma.properti.findMany({
-      where: { tuanRumahId: hostId },
-      select: { id: true }
+    // Cari semua properti di mana pengguna menjadi staf (MANAGER atau RECEPTIONIST)
+    const myProperties = await prisma.propertyStaff.findMany({
+      where: { penggunaId: hostId },
+      select: { propertiId: true }
     });
     
-    const propertyIds = myProperties.map(p => p.id);
+    const propertyIds = myProperties.map(p => p.propertiId);
 
     const pemesanan = await prisma.pemesanan.findMany({
       where: { propertiId: { in: propertyIds } },
@@ -243,7 +243,7 @@ export const getPemesananById = async (req: AuthRequest, res: Response, next: Ne
 
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const pemesanan = await prisma.pemesanan.findUnique({
       where: { id },
@@ -268,10 +268,10 @@ export const getPemesananById = async (req: AuthRequest, res: Response, next: Ne
     }
 
     // Hanya tamu bersangkutan atau tuan rumah/admin yang bisa melihat
-    if (peran === 'TAMU' && pemesanan.tamuId !== penggunaId) {
+    if (peran === 'GUEST' && pemesanan.tamuId !== penggunaId) {
       return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
     }
-    if (peran === 'TUAN_RUMAH' && pemesanan.properti.tuanRumahId !== penggunaId) {
+    if (peran === 'HOST' && pemesanan.properti.tuanRumahId !== penggunaId) {
       return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
     }
 
@@ -287,7 +287,7 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response, next:
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { status } = req.body;
 
     const existing = await prisma.pemesanan.findUnique({
@@ -299,8 +299,18 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response, next:
       return res.status(404).json({ status: 'error', message: 'Pemesanan tidak ditemukan' });
     }
 
-    if (peran === 'TUAN_RUMAH' && existing.properti.tuanRumahId !== penggunaId) {
-      return res.status(403).json({ status: 'error', message: 'Tidak diizinkan mengubah pemesanan ini' });
+    if (peran === 'HOST') {
+      const isStaff = await prisma.propertyStaff.findUnique({
+        where: {
+          propertiId_penggunaId: {
+            propertiId: existing.propertiId,
+            penggunaId: penggunaId
+          }
+        }
+      });
+      if (!isStaff) {
+        return res.status(403).json({ status: 'error', message: 'Tidak diizinkan mengubah pemesanan ini' });
+      }
     }
 
     const pemesanan = await prisma.pemesanan.update({
@@ -327,7 +337,7 @@ export const processPhysicalCheckIn = async (req: AuthRequest, res: Response, ne
     const pemesananId = req.params.id as string;
     const { detailPemesananId, unitKamarId } = req.body;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const pemesanan = await prisma.pemesanan.findUnique({
       where: { id: pemesananId },
@@ -343,7 +353,16 @@ export const processPhysicalCheckIn = async (req: AuthRequest, res: Response, ne
       return res.status(404).json({ status: 'error', message: 'Detail pesanan tidak ditemukan' });
     }
 
-    if (pemesanan.properti.tuanRumahId !== penggunaId && peran !== 'ADMIN') {
+    
+    let isStaff = false;
+    if (peran === 'HOST') {
+      const staff = await prisma.propertyStaff.findUnique({
+        where: { propertiId_penggunaId: { propertiId: pemesanan.propertiId, penggunaId } }
+      });
+      if (staff) isStaff = true;
+    }
+    if (!isStaff && peran !== 'ADMIN') {
+
       return res.status(403).json({ status: 'error', message: 'Hanya tuan rumah/admin yang bisa melakukan check-in' });
     }
 
@@ -435,7 +454,7 @@ export const createWalkInBooking = async (req: AuthRequest, res: Response, next:
       });
 
       if (!tipeKamar) return res.status(404).json({ status: 'error', message: 'Tipe kamar tidak ditemukan' });
-      if (tipeKamar.properti.tuanRumahId !== resepsionisId && req.pengguna.peran !== 'ADMIN') return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
+      if (tipeKamar.properti.tuanRumahId !== resepsionisId && req.pengguna.role !== 'ADMIN') return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
 
       const paketHarga = await prisma.paketHarga.findUnique({
         where: { id: item.paketHargaId, tipeKamarId: item.tipeKamarId, status: 'AKTIF' }

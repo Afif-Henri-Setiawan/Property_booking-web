@@ -12,6 +12,6 @@ router.get('/properti/:propertiId', getUlasanByProperti);
 
 // Endpoint dilindungi
 router.use(protect);
-router.post('/', authorize('TAMU'), validate(createUlasanSchema), createUlasan);
+router.post('/', authorize('GUEST'), validate(createUlasanSchema), createUlasan);
 
 export default router;

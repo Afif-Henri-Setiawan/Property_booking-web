@@ -19,7 +19,7 @@ router.get('/', getAllTipeProperti);
 router.get('/:id', getTipePropertiById);
 
 // Endpoint dilindungi (hanya ADMIN atau TUAN_RUMAH)
-router.use(protect, authorize('ADMIN', 'TUAN_RUMAH'));
+router.use(protect, authorize('ADMIN', 'HOST'));
 
 router.post('/', validate(createTipePropertiSchema), createTipeProperti);
 router.patch('/:id', validate(updateTipePropertiSchema), updateTipeProperti);

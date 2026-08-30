@@ -155,7 +155,7 @@ export const updateProperti = async (req: AuthRequest, res: Response, next: Next
     const id = req.params.id as string;
     const { fasilitasIds, ...data } = req.body;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const existing = await prisma.properti.findUnique({ where: { id } });
     if (!existing) {
@@ -196,7 +196,7 @@ export const deleteProperti = async (req: AuthRequest, res: Response, next: Next
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const existing = await prisma.properti.findUnique({ where: { id } });
     if (!existing) {

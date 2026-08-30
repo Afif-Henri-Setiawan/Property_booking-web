@@ -1,4 +1,4 @@
-import { PrismaClient, StatusProperti, StatusUnit, StatusPemesanan, TipeTamu, Peran } from '@prisma/client';
+import { PrismaClient, StatusProperti, StatusUnit, StatusPemesanan, TipeTamu, Role, StaffRole } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -18,19 +18,19 @@ async function main() {
   const hashedPassword = await bcrypt.hash('password123', 10);
 
   const admin = await prisma.pengguna.create({
-    data: { email: 'admin@staynest.com', nama: 'Admin StayNest', kataSandi: hashedPassword, peran: Peran.ADMIN }
+    data: { email: 'admin@staynest.com', nama: 'Admin StayNest', kataSandi: hashedPassword, role: Role.ADMIN }
   });
 
   const host1 = await prisma.pengguna.create({
-    data: { email: 'sarah@host.com', nama: 'Sarah Jenkins', kataSandi: hashedPassword, peran: Peran.TUAN_RUMAH }
+    data: { email: 'sarah@host.com', nama: 'Sarah Jenkins', kataSandi: hashedPassword, role: Role.HOST }
   });
 
   const host2 = await prisma.pengguna.create({
-    data: { email: 'michael@host.com', nama: 'Michael Chen', kataSandi: hashedPassword, peran: Peran.TUAN_RUMAH }
+    data: { email: 'michael@host.com', nama: 'Michael Chen', kataSandi: hashedPassword, role: Role.HOST }
   });
 
   const tamu = await prisma.pengguna.create({
-    data: { email: 'john@guest.com', nama: 'John Doe', kataSandi: hashedPassword, peran: Peran.TAMU }
+    data: { email: 'john@guest.com', nama: 'John Doe', kataSandi: hashedPassword, role: Role.GUEST }
   });
 
   console.log('Seeding TipeProperti...');
@@ -396,8 +396,18 @@ async function main() {
   });
 
   console.log('Seeding completed!');
-}
 
+  console.log('Seeding PropertyStaff...');
+  await prisma.propertyStaff.createMany({
+    data: [
+      { propertiId: prop1.id, penggunaId: host1.id, staffRole: 'MANAGER' },
+      { propertiId: prop2.id, penggunaId: host1.id, staffRole: 'MANAGER' },
+      { propertiId: prop3.id, penggunaId: host2.id, staffRole: 'MANAGER' },
+      { propertiId: prop4.id, penggunaId: host2.id, staffRole: 'MANAGER' }
+    ]
+  });
+  console.log('Seed berhasil diselesaikan!');
+}
 main()
   .catch((e) => {
     console.error(e);

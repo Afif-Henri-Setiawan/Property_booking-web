@@ -17,7 +17,7 @@ import { validate } from '../middlewares/validate';
 const router = Router();
 
 // Endpoint dilindungi (hanya ADMIN atau TUAN_RUMAH)
-router.use(protect, authorize('ADMIN', 'TUAN_RUMAH'));
+router.use(protect, authorize('ADMIN', 'HOST'));
 
 // Unit Kamar Routes
 router.get('/kamar/:tipeKamarId', getUnitKamarByTipeKamar);

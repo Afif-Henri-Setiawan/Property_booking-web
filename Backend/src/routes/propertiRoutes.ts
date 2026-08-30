@@ -28,11 +28,11 @@ router.patch('/:id/verifikasi', protect, authorize('ADMIN'), validate(verifyProp
 
 // Endpoint dilindungi
 router.use(protect);
-router.get('/host/my-properties', authorize('TUAN_RUMAH', 'ADMIN'), getMyProperti);
+router.get('/host/my-properties', authorize('HOST', 'ADMIN'), getMyProperti);
 
 // Manajemen properti (Hanya Host / Admin)
-router.post('/', authorize('TUAN_RUMAH', 'ADMIN'), validate(createPropertiSchema), createProperti);
-router.patch('/:id', authorize('TUAN_RUMAH', 'ADMIN'), validate(updatePropertiSchema), updateProperti);
-router.delete('/:id', authorize('TUAN_RUMAH', 'ADMIN'), deleteProperti);
+router.post('/', authorize('HOST', 'ADMIN'), validate(createPropertiSchema), createProperti);
+router.patch('/:id', authorize('HOST', 'ADMIN'), validate(updatePropertiSchema), updateProperti);
+router.delete('/:id', authorize('HOST', 'ADMIN'), deleteProperti);
 
 export default router;

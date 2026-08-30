@@ -13,7 +13,7 @@ export const registerSchema = z.object({
     email: z.string().email({ message: 'Format email tidak valid' }),
     kataSandi: z.string().min(6, { message: 'Kata sandi minimal 6 karakter' }),
     nama: z.string().min(2, { message: 'Nama minimal 2 karakter' }),
-    peran: z.enum(['TAMU', 'TUAN_RUMAH']).optional(),
+    peran: z.enum(['GUEST', 'HOST']).optional(),
   }),
 });
 
@@ -44,12 +44,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         email,
         nama,
         kataSandi: hashedPassword,
-        peran: peran || 'TAMU',
+        peran: peran || 'GUEST',
       },
     });
 
     const token = jwt.sign(
-      { id: pengguna.id, peran: pengguna.peran },
+      { id: pengguna.id, peran: pengguna.role },
       process.env.JWT_SECRET as string,
       { expiresIn: '30d' }
     );
@@ -62,7 +62,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         id: pengguna.id,
         email: pengguna.email,
         nama: pengguna.nama,
-        peran: pengguna.peran,
+        peran: pengguna.role,
         token,
       },
     });
@@ -91,7 +91,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     const token = jwt.sign(
-      { id: pengguna.id, peran: pengguna.peran },
+      { id: pengguna.id, peran: pengguna.role },
       process.env.JWT_SECRET as string,
       { expiresIn: '30d' }
     );
@@ -104,7 +104,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         id: pengguna.id,
         email: pengguna.email,
         nama: pengguna.nama,
-        peran: pengguna.peran,
+        peran: pengguna.role,
         token,
       },
     });

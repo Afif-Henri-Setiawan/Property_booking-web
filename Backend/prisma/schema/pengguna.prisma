@@ -3,17 +3,18 @@ model Pengguna {
   email          String   @unique
   nama           String
   kataSandi      String
-  peran          Peran    @default(TAMU)
+  role           Role     @default(GUEST)
   dibuatPada     DateTime @default(now())
   diperbaruiPada DateTime @updatedAt
 
   properti  Properti[]
   pemesanan Pemesanan[]
-  ulasan    Ulasan[]
+  ulasan         Ulasan[]
+  propertyStaff  PropertyStaff[]
 }
 
-enum Peran {
-  TAMU
-  TUAN_RUMAH
+enum Role {
+  GUEST
+  HOST
   ADMIN
 }

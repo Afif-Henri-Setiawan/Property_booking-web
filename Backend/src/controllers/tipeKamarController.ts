@@ -94,7 +94,7 @@ export const getTipeKamarById = async (req: Request, res: Response, next: NextFu
 export const createTipeKamar = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { fasilitasIds, kasur, propertiId, ...data } = req.body;
 
     const isOwner = await checkPropertyOwnership(propertiId, penggunaId, peran);
@@ -135,7 +135,7 @@ export const updateTipeKamar = async (req: AuthRequest, res: Response, next: Nex
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { fasilitasIds, kasur, ...data } = req.body;
 
     const existing = await prisma.tipeKamar.findUnique({ where: { id } });
@@ -188,7 +188,7 @@ export const deleteTipeKamar = async (req: AuthRequest, res: Response, next: Nex
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const existing = await prisma.tipeKamar.findUnique({ where: { id } });
     if (!existing) {

@@ -25,8 +25,9 @@ model Properti {
   foto      FotoProperti[]
   fasilitas FasilitasProperti[]
   tipeKamar TipeKamar[]
-  ulasan    Ulasan[]
-  pemesanan Pemesanan[]
+  ulasan        Ulasan[]
+  pemesanan     Pemesanan[]
+  propertyStaff PropertyStaff[]
 }
 
 model TipeProperti {
@@ -72,4 +73,22 @@ enum StatusProperti {
   DITOLAK
   NONAKTIF
   DITANGGUHKAN
+}
+
+model PropertyStaff {
+  id          String   @id @default(uuid())
+  propertiId  String
+  penggunaId  String
+  staffRole   StaffRole @default(RECEPTIONIST)
+  dibuatPada  DateTime @default(now())
+
+  properti Properti @relation(fields: [propertiId], references: [id], onDelete: Cascade)
+  pengguna Pengguna @relation(fields: [penggunaId], references: [id], onDelete: Cascade)
+
+  @@unique([propertiId, penggunaId])
+}
+
+enum StaffRole {
+  MANAGER
+  RECEPTIONIST
 }

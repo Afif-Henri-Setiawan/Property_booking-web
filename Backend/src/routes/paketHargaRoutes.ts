@@ -19,7 +19,7 @@ router.get('/kamar/:tipeKamarId', getPaketHargaByTipeKamar);
 router.get('/:id', getPaketHargaById);
 
 // Endpoint dilindungi (hanya ADMIN atau TUAN_RUMAH)
-router.use(protect, authorize('ADMIN', 'TUAN_RUMAH'));
+router.use(protect, authorize('ADMIN', 'HOST'));
 
 router.post('/', validate(createPaketHargaSchema), createPaketHarga);
 router.patch('/:id', validate(updatePaketHargaSchema), updatePaketHarga);

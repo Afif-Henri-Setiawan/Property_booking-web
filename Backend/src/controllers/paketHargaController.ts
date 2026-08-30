@@ -71,7 +71,7 @@ export const getPaketHargaById = async (req: Request, res: Response, next: NextF
 export const createPaketHarga = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { tipeKamarId, ...data } = req.body;
 
     const isOwner = await checkTipeKamarOwnership(tipeKamarId, penggunaId, peran);
@@ -97,7 +97,7 @@ export const updatePaketHarga = async (req: AuthRequest, res: Response, next: Ne
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const data = req.body;
 
     const existing = await prisma.paketHarga.findUnique({ where: { id } });
@@ -126,7 +126,7 @@ export const deletePaketHarga = async (req: AuthRequest, res: Response, next: Ne
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const existing = await prisma.paketHarga.findUnique({ where: { id } });
     if (!existing) {

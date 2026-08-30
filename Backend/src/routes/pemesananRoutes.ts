@@ -23,15 +23,15 @@ const router = Router();
 router.use(protect);
 
 // Endpoint untuk TAMU
-router.post('/', authorize('TAMU'), validate(createPemesananSchema), createPemesanan);
-router.get('/my-bookings', authorize('TAMU'), getMyBookings);
-router.get('/:id', authorize('TAMU', 'TUAN_RUMAH', 'ADMIN'), getPemesananById);
+router.post('/', authorize('GUEST'), validate(createPemesananSchema), createPemesanan);
+router.get('/my-bookings', authorize('GUEST'), getMyBookings);
+router.get('/:id', authorize('GUEST', 'HOST', 'ADMIN'), getPemesananById);
 
 // Endpoint untuk TUAN RUMAH / ADMIN
-router.get('/host/bookings', authorize('TUAN_RUMAH', 'ADMIN'), getHostBookings);
-router.patch('/:id/status', authorize('TUAN_RUMAH', 'ADMIN'), validate(updateStatusPemesananSchema), updateBookingStatus);
-router.post('/:id/check-in', authorize('TUAN_RUMAH', 'ADMIN'), validate(checkInSchema), processPhysicalCheckIn);
-router.post('/walk-in', authorize('TUAN_RUMAH', 'ADMIN'), validate(createWalkInBookingSchema), createWalkInBooking);
-router.get('/tiket/:nomor', authorize('TUAN_RUMAH', 'ADMIN'), getTiketByNomor);
+router.get('/host/bookings', authorize('HOST', 'ADMIN'), getHostBookings);
+router.patch('/:id/status', authorize('HOST', 'ADMIN'), validate(updateStatusPemesananSchema), updateBookingStatus);
+router.post('/:id/check-in', authorize('HOST', 'ADMIN'), validate(checkInSchema), processPhysicalCheckIn);
+router.post('/walk-in', authorize('HOST', 'ADMIN'), validate(createWalkInBookingSchema), createWalkInBooking);
+router.get('/tiket/:nomor', authorize('HOST', 'ADMIN'), getTiketByNomor);
 
 export default router;

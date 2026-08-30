@@ -11,7 +11,7 @@ router.post('/webhook', validate(webhookSchema), webhookPembayaran);
 
 // Endpoint dilindungi
 router.use(protect);
-router.post('/:pemesananId', authorize('TAMU'), buatPembayaran);
-router.get('/:pemesananId/sync', authorize('TAMU', 'TUAN_RUMAH', 'ADMIN'), syncStatusPembayaran);
+router.post('/:pemesananId', authorize('GUEST'), buatPembayaran);
+router.get('/:pemesananId/sync', authorize('GUEST', 'HOST', 'ADMIN'), syncStatusPembayaran);
 
 export default router;
