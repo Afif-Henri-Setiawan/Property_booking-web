@@ -9,7 +9,7 @@ export default async function TopNavBar() {
   const { userId } = await auth();
 
   return (
-    <header className="fixed top-0 w-full z-50 transition-all duration-300 shadow-sm bg-white/90 backdrop-blur-md">
+    <header className="fixed top-0 w-full z-50 transition-all duration-300 shadow-sm bg-white/90 backdrop-blur-md print:hidden">
       <nav className="flex justify-between items-center h-20 px-4 md:px-16 max-w-7xl mx-auto">
         {/* Brand */}
         <Link

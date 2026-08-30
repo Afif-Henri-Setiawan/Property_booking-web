@@ -113,7 +113,10 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
       });
     }
 
-    if (dewasa > totalMaksDewasa || anak > totalMaksAnak) {
+    const totalTamu = dewasa + anak;
+    const totalKapasitas = totalMaksDewasa + totalMaksAnak;
+
+    if (totalTamu > totalKapasitas) {
       return res.status(400).json({ status: 'error', message: 'Kapasitas total kamar tidak mencukupi untuk jumlah tamu ini' });
     }
 
@@ -137,7 +140,7 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
         pajak,
         totalHarga,
         status: 'MENUNGGU_PEMBAYARAN',
-        kadaluarsaPada: new Date(Date.now() + 60 * 60 * 1000),
+        kadaluarsaPada: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 jam
         detail: {
           create: detailPemesanan
         },
@@ -162,6 +165,15 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
 // Endpoint untuk Tamu: Lihat Riwayat Pesanan Sendiri
 export const getMyBookings = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    // Auto-batalkan pesanan yang sudah melewati batas waktu (24 jam)
+    await prisma.pemesanan.updateMany({
+      where: {
+        status: 'MENUNGGU_PEMBAYARAN',
+        kadaluarsaPada: { lt: new Date() }
+      },
+      data: { status: 'DIBATALKAN' }
+    });
+
     const tamuId = req.pengguna.id as string;
     const pemesanan = await prisma.pemesanan.findMany({
       where: { tamuId },
@@ -181,6 +193,15 @@ export const getMyBookings = async (req: AuthRequest, res: Response, next: NextF
 // Endpoint untuk Tuan Rumah: Lihat Pesanan Masuk
 export const getHostBookings = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    // Auto-batalkan pesanan yang sudah melewati batas waktu (24 jam)
+    await prisma.pemesanan.updateMany({
+      where: {
+        status: 'MENUNGGU_PEMBAYARAN',
+        kadaluarsaPada: { lt: new Date() }
+      },
+      data: { status: 'DIBATALKAN' }
+    });
+
     const hostId = req.pengguna.id as string;
     
     // Cari semua properti milik host
@@ -204,6 +225,59 @@ export const getHostBookings = async (req: AuthRequest, res: Response, next: Nex
     res.json({ status: 'success', data: pemesanan });
   } catch (error) {
     logger.error({ err: error }, 'Error saat mengambil daftar pesanan host');
+    next(error);
+  }
+};
+
+// Endpoint untuk Tamu atau Tuan Rumah: Lihat Detail Pesanan berdasarkan ID
+export const getPemesananById = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    // Auto-batalkan pesanan yang sudah melewati batas waktu (24 jam)
+    await prisma.pemesanan.updateMany({
+      where: {
+        status: 'MENUNGGU_PEMBAYARAN',
+        kadaluarsaPada: { lt: new Date() }
+      },
+      data: { status: 'DIBATALKAN' }
+    });
+
+    const id = req.params.id as string;
+    const penggunaId = req.pengguna.id as string;
+    const peran = req.pengguna.peran;
+
+    const pemesanan = await prisma.pemesanan.findUnique({
+      where: { id },
+      include: {
+        properti: {
+          select: { id: true, nama: true, kota: true, alamat: true, tuanRumahId: true, foto: true }
+        },
+        detail: {
+          include: {
+            tipeKamar: { select: { id: true, nama: true, foto: true } },
+            paketHarga: { select: { id: true, nama: true } }
+          }
+        },
+        tamuPemesanan: true,
+        tamu: { select: { nama: true, email: true } },
+        pembayaran: true
+      }
+    });
+
+    if (!pemesanan) {
+      return res.status(404).json({ status: 'error', message: 'Pemesanan tidak ditemukan' });
+    }
+
+    // Hanya tamu bersangkutan atau tuan rumah/admin yang bisa melihat
+    if (peran === 'TAMU' && pemesanan.tamuId !== penggunaId) {
+      return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
+    }
+    if (peran === 'TUAN_RUMAH' && pemesanan.properti.tuanRumahId !== penggunaId) {
+      return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
+    }
+
+    res.json({ status: 'success', data: pemesanan });
+  } catch (error) {
+    logger.error({ err: error }, 'Error saat mengambil detail pesanan');
     next(error);
   }
 };

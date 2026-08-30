@@ -147,3 +147,62 @@ export const webhookPembayaran = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+
+// Endpoint untuk cek status transaksi manual (Sync dari Midtrans)
+export const syncStatusPembayaran = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const pemesananId = req.params.pemesananId as string;
+    
+    const pembayaran = await prisma.pembayaran.findUnique({
+      where: { pemesananId }
+    });
+
+    if (!pembayaran || !pembayaran.orderIdMidtrans) {
+      return res.status(404).json({ status: 'error', message: 'Transaksi pembayaran tidak ditemukan' });
+    }
+
+    // Gunakan Snap client untuk mengecek status dari Midtrans
+    const statusResponse = await snap.transaction.status(pembayaran.orderIdMidtrans);
+    const { transaction_status, transaction_id, payment_type, fraud_status } = statusResponse;
+
+    // Update status tabel pembayaran
+    await prisma.pembayaran.update({
+      where: { id: pembayaran.id },
+      data: {
+        transaksiIdMidtrans: transaction_id,
+        metodePembayaran: payment_type,
+        statusTransaksi: transaction_status,
+        statusPenipuan: fraud_status,
+        dibayarPada: transaction_status === 'settlement' || transaction_status === 'capture' ? new Date() : null
+      }
+    });
+
+    // Sesuaikan status tabel pemesanan
+    let statusPemesanan = 'MENUNGGU_PEMBAYARAN';
+    if (transaction_status === 'settlement' || transaction_status === 'capture') {
+      statusPemesanan = 'DIKONFIRMASI';
+    } else if (transaction_status === 'cancel' || transaction_status === 'deny' || transaction_status === 'expire') {
+      statusPemesanan = 'DIBATALKAN';
+    }
+
+    if (statusPemesanan !== 'MENUNGGU_PEMBAYARAN') {
+      await prisma.pemesanan.update({
+        where: { id: pembayaran.pemesananId },
+        data: { status: statusPemesanan as any }
+      });
+    }
+
+    res.json({ 
+      status: 'success', 
+      message: 'Status pembayaran berhasil disinkronisasi',
+      data: {
+        statusTransaksi: transaction_status,
+        statusPemesanan
+      }
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error saat sinkronisasi status pembayaran');
+    // Jika tidak ditemukan di midtrans, mungkin belum dibayar atau order invalid
+    return res.status(500).json({ status: 'error', message: 'Gagal mendapatkan status dari payment gateway' });
+  }
+};

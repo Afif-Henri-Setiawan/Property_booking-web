@@ -25,6 +25,7 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
   const { user, isLoaded } = useUser();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showValidation, setShowValidation] = useState(false);
   
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
@@ -44,10 +45,12 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
 
   const handleConfirm = async () => {
     if (!nama || !email || !telepon) {
+      setShowValidation(true);
       setErrorMsg("Mohon lengkapi Data Tamu terlebih dahulu.");
       return;
     }
 
+    setShowValidation(false);
     setLoading(true);
     setErrorMsg("");
 
@@ -120,17 +123,23 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
       if (window.snap) {
         // @ts-ignore
         window.snap.pay(snapToken, {
-          onSuccess: function(result: any) {
-            router.push("/user/bookings?status=success");
+          onSuccess: async function(result: any) {
+            // Auto sync immediately on success
+            try {
+              await fetch(`${apiUrl}/pembayaran/${pemesananId}/sync`, {
+                headers: { "Authorization": `Bearer ${token}` }
+              });
+            } catch (e) {}
+            router.push(`/user/bookings/${pemesananId}`);
           },
           onPending: function(result: any) {
-            router.push("/user/bookings?status=pending");
+            router.push(`/user/bookings/${pemesananId}`);
           },
           onError: function(result: any) {
             setErrorMsg("Pembayaran gagal. Silakan coba lagi.");
           },
           onClose: function() {
-            router.push("/user/bookings");
+            router.push(`/user/bookings/${pemesananId}`);
           }
         });
       } else {
@@ -164,9 +173,14 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
                 type="text" 
                 placeholder="Masukkan nama lengkap" 
                 value={nama}
-                onChange={e => setNama(e.target.value)}
-                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors bg-slate-50 focus:bg-white"
+                onChange={e => { setNama(e.target.value); setErrorMsg(""); }}
+                className={`w-full text-sm p-3 rounded-lg border outline-none transition-colors ${
+                  showValidation && !nama 
+                    ? "border-red-500 bg-red-50 focus:border-red-500 focus:bg-red-50 text-red-900 placeholder:text-red-300"
+                    : "border-slate-200 bg-slate-50 focus:border-primary focus:bg-white"
+                }`}
               />
+              {showValidation && !nama && <p className="text-red-500 text-xs mt-1">Nama lengkap wajib diisi</p>}
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Alamat Email</label>
@@ -174,9 +188,14 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
                 type="email" 
                 placeholder="Masukkan email" 
                 value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors bg-slate-50 focus:bg-white"
+                onChange={e => { setEmail(e.target.value); setErrorMsg(""); }}
+                className={`w-full text-sm p-3 rounded-lg border outline-none transition-colors ${
+                  showValidation && !email 
+                    ? "border-red-500 bg-red-50 focus:border-red-500 focus:bg-red-50 text-red-900 placeholder:text-red-300"
+                    : "border-slate-200 bg-slate-50 focus:border-primary focus:bg-white"
+                }`}
               />
+              {showValidation && !email && <p className="text-red-500 text-xs mt-1">Alamat email wajib diisi</p>}
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1">Nomor Telepon</label>
@@ -184,9 +203,14 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
                 type="tel" 
                 placeholder="Masukkan nomor telepon" 
                 value={telepon}
-                onChange={e => setTelepon(e.target.value)}
-                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors bg-slate-50 focus:bg-white"
+                onChange={e => { setTelepon(e.target.value); setErrorMsg(""); }}
+                className={`w-full text-sm p-3 rounded-lg border outline-none transition-colors ${
+                  showValidation && !telepon 
+                    ? "border-red-500 bg-red-50 focus:border-red-500 focus:bg-red-50 text-red-900 placeholder:text-red-300"
+                    : "border-slate-200 bg-slate-50 focus:border-primary focus:bg-white"
+                }`}
               />
+              {showValidation && !telepon && <p className="text-red-500 text-xs mt-1">Nomor telepon wajib diisi</p>}
             </div>
           </div>
 

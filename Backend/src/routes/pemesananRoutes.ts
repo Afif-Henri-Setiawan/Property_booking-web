@@ -10,7 +10,8 @@ import {
   processPhysicalCheckIn,
   createWalkInBookingSchema,
   createWalkInBooking,
-  getTiketByNomor
+  getTiketByNomor,
+  getPemesananById
 } from '../controllers/pemesananController';
 import { protect } from '../middlewares/authMiddleware';
 import { authorize } from '../middlewares/roleMiddleware';
@@ -24,6 +25,7 @@ router.use(protect);
 // Endpoint untuk TAMU
 router.post('/', authorize('TAMU'), validate(createPemesananSchema), createPemesanan);
 router.get('/my-bookings', authorize('TAMU'), getMyBookings);
+router.get('/:id', authorize('TAMU', 'TUAN_RUMAH', 'ADMIN'), getPemesananById);
 
 // Endpoint untuk TUAN RUMAH / ADMIN
 router.get('/host/bookings', authorize('TUAN_RUMAH', 'ADMIN'), getHostBookings);

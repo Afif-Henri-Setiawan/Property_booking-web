@@ -22,7 +22,7 @@ interface Booking {
   };
 }
 
-export default function BookingsPage() {
+export default function HistoryPage() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,10 +63,10 @@ export default function BookingsPage() {
               nama: b.detail && b.detail.length > 0 ? b.detail[0].tipeKamar?.nama || "-" : "-"
             }
           }));
-          const filteredActive = mappedBookings.filter((b: Booking) => 
-            ['MENUNGGU_PEMBAYARAN'].includes(b.statusPemesanan)
+          const filteredHistory = mappedBookings.filter((b: Booking) => 
+            ['DIKONFIRMASI', 'SELESAI', 'DIBATALKAN'].includes(b.statusPemesanan)
           );
-          setBookings(filteredActive);
+          setBookings(filteredHistory);
         } else {
           throw new Error(data.message || 'Error fetching bookings');
         }
@@ -140,8 +140,8 @@ export default function BookingsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold text-[#1E2A4F]">Pesanan Aktif (Belum Dibayar)</h1>
-        <p className="text-gray-500 text-sm mt-1">Selesaikan pembayaran untuk pesanan Anda agar bisa segera dikonfirmasi.</p>
+        <h1 className="text-2xl font-bold text-[#1E2A4F]">Riwayat Pesanan</h1>
+        <p className="text-gray-500 text-sm mt-1">Lihat dan kelola pesanan Anda yang sudah dibayar atau selesai.</p>
         {error && (
            <div className="mt-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm border border-blue-100">
              Catatan: Backend API mengembalikan error ({error}). Menampilkan data tiruan untuk demonstrasi.
