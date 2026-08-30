@@ -19,7 +19,7 @@ router.get('/properti/:propertiId', getTipeKamarByProperti);
 router.get('/:id', getTipeKamarById);
 
 // Endpoint dilindungi (hanya ADMIN atau TUAN_RUMAH)
-router.use(protect, authorize('ADMIN', 'TUAN_RUMAH'));
+router.use(protect, authorize('ADMIN', 'HOST'));
 
 router.post('/', validate(createTipeKamarSchema), createTipeKamar);
 router.patch('/:id', validate(updateTipeKamarSchema), updateTipeKamar);

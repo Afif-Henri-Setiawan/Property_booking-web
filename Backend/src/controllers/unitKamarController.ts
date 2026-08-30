@@ -58,7 +58,7 @@ export const getUnitKamarByTipeKamar = async (req: AuthRequest, res: Response, n
   try {
     const tipeKamarId = req.params.tipeKamarId as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const isOwner = await checkTipeKamarOwnership(tipeKamarId, penggunaId, peran);
     if (!isOwner) {
@@ -79,7 +79,7 @@ export const getUnitKamarByTipeKamar = async (req: AuthRequest, res: Response, n
 export const createUnitKamar = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { tipeKamarId, nomorUnit, lantai, status } = req.body;
 
     const isOwner = await checkTipeKamarOwnership(tipeKamarId, penggunaId, peran);
@@ -110,7 +110,7 @@ export const updateUnitKamar = async (req: AuthRequest, res: Response, next: Nex
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { nomorUnit, lantai, status } = req.body;
 
     const isOwner = await checkUnitKamarOwnership(id, penggunaId, peran);
@@ -146,7 +146,7 @@ export const deleteUnitKamar = async (req: AuthRequest, res: Response, next: Nex
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const isOwner = await checkUnitKamarOwnership(id, penggunaId, peran);
     if (!isOwner) {
@@ -166,7 +166,7 @@ export const deleteUnitKamar = async (req: AuthRequest, res: Response, next: Nex
 export const createBlokir = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
     const { unitKamarId, tanggalMulai, tanggalSelesai, alasan } = req.body;
 
     const isOwner = await checkUnitKamarOwnership(unitKamarId, penggunaId, peran);
@@ -196,7 +196,7 @@ export const deleteBlokir = async (req: AuthRequest, res: Response, next: NextFu
   try {
     const id = req.params.id as string;
     const penggunaId = req.pengguna.id as string;
-    const peran = req.pengguna.peran;
+    const peran = req.pengguna.role;
 
     const blokir = await prisma.blokirKetersediaan.findUnique({ where: { id } });
     if (!blokir) {

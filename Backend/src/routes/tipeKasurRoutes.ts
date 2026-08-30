@@ -19,7 +19,7 @@ router.get('/', getAllTipeKasur);
 router.get('/:id', getTipeKasurById);
 
 // Endpoint dilindungi (hanya ADMIN atau TUAN_RUMAH)
-router.use(protect, authorize('ADMIN', 'TUAN_RUMAH'));
+router.use(protect, authorize('ADMIN', 'HOST'));
 
 router.post('/', validate(createTipeKasurSchema), createTipeKasur);
 router.patch('/:id', validate(updateTipeKasurSchema), updateTipeKasur);

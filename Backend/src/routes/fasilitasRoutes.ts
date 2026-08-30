@@ -19,7 +19,7 @@ router.get('/', getAllFasilitas);
 router.get('/:id', getFasilitasById);
 
 // Endpoint dilindungi (hanya ADMIN atau TUAN_RUMAH)
-router.use(protect, authorize('ADMIN', 'TUAN_RUMAH'));
+router.use(protect, authorize('ADMIN', 'HOST'));
 
 router.post('/', validate(createFasilitasSchema), createFasilitas);
 router.patch('/:id', validate(updateFasilitasSchema), updateFasilitas);
