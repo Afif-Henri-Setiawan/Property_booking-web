@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { buatPembayaran, webhookPembayaran, webhookSchema } from '../controllers/pembayaranController';
+import { buatPembayaran, webhookPembayaran, webhookSchema, syncStatusPembayaran } from '../controllers/pembayaranController';
 import { protect } from '../middlewares/authMiddleware';
 import { authorize } from '../middlewares/roleMiddleware';
 import { validate } from '../middlewares/validate';
@@ -12,5 +12,6 @@ router.post('/webhook', validate(webhookSchema), webhookPembayaran);
 // Endpoint dilindungi
 router.use(protect);
 router.post('/:pemesananId', authorize('TAMU'), buatPembayaran);
+router.get('/:pemesananId/sync', authorize('TAMU', 'TUAN_RUMAH', 'ADMIN'), syncStatusPembayaran);
 
 export default router;
