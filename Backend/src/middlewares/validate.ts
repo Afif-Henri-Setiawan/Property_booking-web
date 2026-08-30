@@ -17,7 +17,7 @@ export const validate =
       next();
     } catch (error: any) {
       if (error instanceof ZodError) {
-        const errorMessages = (error as any).errors.map((err: any) => `${err.path[err.path.length - 1]}: ${err.message}`);
+        const errorMessages = error.issues.map((err: any) => `${err.path[err.path.length - 1]}: ${err.message}`);
         return res.status(400).json({
           status: 'error',
           message: 'Validasi gagal',

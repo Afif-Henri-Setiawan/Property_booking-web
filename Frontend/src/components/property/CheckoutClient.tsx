@@ -97,8 +97,45 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
         throw new Error(data.message || "Terjadi kesalahan saat memproses pesanan.");
       }
 
-      // If successful, redirect to bookings history page
-      router.push("/user/bookings");
+      const pemesananId = data.data.id;
+
+      // 2. Fetch Payment Token from Midtrans
+      const paymentRes = await fetch(`${apiUrl}/pembayaran/${pemesananId}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const paymentData = await paymentRes.json();
+
+      if (!paymentRes.ok) {
+        throw new Error(paymentData.message || "Gagal mendapatkan token pembayaran.");
+      }
+
+      const snapToken = paymentData.data.paymentGateway.token;
+
+      // 3. Trigger Midtrans Snap
+      // @ts-ignore
+      if (window.snap) {
+        // @ts-ignore
+        window.snap.pay(snapToken, {
+          onSuccess: function(result: any) {
+            router.push("/user/bookings?status=success");
+          },
+          onPending: function(result: any) {
+            router.push("/user/bookings?status=pending");
+          },
+          onError: function(result: any) {
+            setErrorMsg("Pembayaran gagal. Silakan coba lagi.");
+          },
+          onClose: function() {
+            router.push("/user/bookings");
+          }
+        });
+      } else {
+        throw new Error("Sistem pembayaran belum siap, silakan refresh halaman.");
+      }
 
     } catch (err: any) {
       setErrorMsg(err.message || "Gagal menghubungi server.");
@@ -115,80 +152,42 @@ export default function CheckoutClient({ propertyId, checkIn, checkOut, guests, 
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <ShieldCheck className="text-primary h-6 w-6" />
-              <span className="font-bold text-forest-900">Pembayaran Aman</span>
+              <span className="font-bold text-forest-900">Informasi Tamu</span>
             </div>
-            <span className="text-sm font-mono bg-slate-100 px-2 py-1 rounded text-slate-500">Simulasi</span>
           </div>
 
           {/* Form Data Tamu */}
-          <div className="space-y-3 mb-6 p-4 bg-slate-50 border border-slate-100 rounded-xl">
-            <p className="text-sm font-bold text-forest-900 mb-2">Data Tamu Utama</p>
+          <div className="space-y-4 mb-6">
             <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nama Lengkap</label>
               <input 
                 type="text" 
-                placeholder="Nama Lengkap" 
+                placeholder="Masukkan nama lengkap" 
                 value={nama}
                 onChange={e => setNama(e.target.value)}
-                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors"
+                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors bg-slate-50 focus:bg-white"
               />
             </div>
             <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Alamat Email</label>
               <input 
                 type="email" 
-                placeholder="Alamat Email" 
+                placeholder="Masukkan email" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors"
+                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors bg-slate-50 focus:bg-white"
               />
             </div>
             <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1">Nomor Telepon</label>
               <input 
                 type="tel" 
-                placeholder="Nomor Telepon" 
+                placeholder="Masukkan nomor telepon" 
                 value={telepon}
                 onChange={e => setTelepon(e.target.value)}
-                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors"
+                className="w-full text-sm p-3 rounded-lg border border-slate-200 outline-none focus:border-primary transition-colors bg-slate-50 focus:bg-white"
               />
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-sm font-medium text-slate-500 mb-2">Pilih Metode Pembayaran</p>
-            
-            <button className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-primary bg-primary/5 text-left transition-all">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white rounded shadow-sm">
-                  <CreditCard className="text-primary h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-forest-900">Kartu Kredit</p>
-                  <p className="text-xs text-slate-500">Visa, Mastercard, JCB</p>
-                </div>
-              </div>
-              <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                <Check className="h-3 w-3 text-white" />
-              </div>
-            </button>
-
-            <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-primary/50 text-left transition-all opacity-60">
-              <div className="p-2 bg-slate-50 rounded">
-                <Building2 className="text-slate-500 h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-bold text-forest-900">Transfer Bank</p>
-                <p className="text-xs text-slate-500">BCA, Mandiri, BNI</p>
-              </div>
-            </button>
-
-            <button className="w-full flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-primary/50 text-left transition-all opacity-60">
-              <div className="p-2 bg-slate-50 rounded">
-                <Wallet className="text-slate-500 h-5 w-5" />
-              </div>
-              <div>
-                <p className="font-bold text-forest-900">E-Wallet</p>
-                <p className="text-xs text-slate-500">GoPay, ShopeePay</p>
-              </div>
-            </button>
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200">
