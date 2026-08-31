@@ -340,7 +340,7 @@ export default function PropertyManagementPage() {
     e.preventDefault();
     try {
       const token = await getToken();
-      const res = await fetch("http://localhost:5000/api/v1/unitkamar", {
+      const res = await fetch("http://localhost:5000/api/v1/unit-kamar", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ...unitFormData, tipeKamarId: selectedTkIdForUnit })
@@ -362,7 +362,7 @@ export default function PropertyManagementPage() {
     if (!confirm("Yakin ingin menghapus ruangan ini?")) return;
     try {
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/v1/unitkamar/${unitId}`, {
+      const res = await fetch(`http://localhost:5000/api/v1/unit-kamar/${unitId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
