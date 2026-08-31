@@ -748,41 +748,7 @@ export default function PropertyManagementPage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <Label className="mb-2 block text-base font-semibold">Fasilitas Dalam Kamar</Label>
-                
-                {/* Dynamic Facility Addition */}
-                <div className="flex gap-2 mb-4 items-end bg-slate-50 p-3 rounded-md border border-slate-200">
-                  <div className="flex-1 grid gap-1">
-                    <Label htmlFor="new_tk_facility" className="text-xs">Fasilitas belum ada? Tambah baru:</Label>
-                    <Input 
-                      id="new_tk_facility"
-                      placeholder="Misal: Netflix" 
-                      value={newFacilityName} 
-                      onChange={e => setNewFacilityName(e.target.value)} 
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <Button type="button" size="sm" onClick={handleAddFacility} disabled={isAddingFacility || !newFacilityName.trim()} variant="secondary">
-                    {isAddingFacility ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus size={14} className="mr-1"/> Tambah</>}
-                  </Button>
-                </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-2 max-h-[200px] overflow-y-auto p-1">
-                  {allFasilitas.map(f => (
-                    <div key={f.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`tk_fac_${f.id}`} 
-                        checked={tkFormData.fasilitasIds.includes(f.id)}
-                        onCheckedChange={() => handleTkFasilitasToggle(f.id)}
-                      />
-                      <label htmlFor={`tk_fac_${f.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                        {f.nama}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
             <DialogFooter className="mt-4">
               <Button type="button" variant="outline" onClick={() => { setIsAddTipeKamarOpen(false); setIsEditTipeKamarOpen(false); }}>Batal</Button>

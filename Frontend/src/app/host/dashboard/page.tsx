@@ -112,7 +112,7 @@ export default function HostDashboardPage() {
               <kpi.icon className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-forest-900 font-mono">{kpi.value}</div>
+              <div className="text-2xl font-bold text-forest-900">{kpi.value}</div>
               <p className="text-xs text-slate-400 mt-1">{kpi.trend}</p>
             </CardContent>
           </Card>
@@ -155,7 +155,7 @@ export default function HostDashboardPage() {
                         {property.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono">{property.price}</TableCell>
+                    <TableCell>{property.price}</TableCell>
                     <TableCell>{property.bookings}</TableCell>
                     <TableCell className="text-right">
                       <Link href={`/host/properties/${property.id}`} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 text-primary hover:bg-primary/10">
