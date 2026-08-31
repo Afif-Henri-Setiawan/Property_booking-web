@@ -101,6 +101,7 @@ export const getPropertiById = async (req: Request, res: Response, next: NextFun
         tipeKamar: {
           include: {
             paketHarga: true,
+            unit: true,
             kasur: {
               include: {
                 tipeKasur: true
@@ -259,6 +260,85 @@ export const verifyProperty = async (req: AuthRequest, res: Response, next: Next
     });
   } catch (error) {
     logger.error({ err: error }, 'Error verifikasi properti');
+    next(error);
+  }
+};
+
+export const getHostDashboard = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const hostId = req.pengguna.id as string;
+    
+    // Cari properti di mana pengguna adalah MANAGER atau tuanRumahId
+    const myProperties = await prisma.propertyStaff.findMany({
+      where: { penggunaId: hostId, staffRole: 'MANAGER' },
+      select: { propertiId: true }
+    });
+    
+    const staffPropertyIds = myProperties.map(p => p.propertiId);
+
+    const hostedProperties = await prisma.properti.findMany({
+      where: { tuanRumahId: hostId },
+      select: { id: true }
+    });
+    const hostedPropertyIds = hostedProperties.map(p => p.id);
+
+    // Gabungkan ID
+    const propertyIds = [...new Set([...staffPropertyIds, ...hostedPropertyIds])];
+
+    // Ambil detail properti dengan agregasi jumlah pesanan
+    const properties = await prisma.properti.findMany({
+      where: { id: { in: propertyIds } },
+      include: {
+        tipeKamar: {
+          take: 1,
+          orderBy: { hargaDasar: 'asc' }
+        },
+        _count: {
+          select: { pemesanan: true }
+        }
+      }
+    });
+
+    const pemesananList = await prisma.pemesanan.findMany({
+      where: {
+        propertiId: { in: propertyIds },
+        status: { in: ['DIKONFIRMASI', 'CHECK_IN', 'SELESAI'] }
+      }
+    });
+
+    const totalBookings = await prisma.pemesanan.count({
+      where: { propertiId: { in: propertyIds } }
+    });
+
+    const revenue = pemesananList.reduce((acc, curr) => acc + Number(curr.totalHarga), 0);
+
+    const formattedProperties = properties.map(p => {
+      const propBookings = pemesananList.filter(b => b.propertiId === p.id);
+      const propRevenue = propBookings.reduce((acc, curr) => acc + Number(curr.totalHarga), 0);
+      
+      return {
+        id: p.id,
+        name: p.nama,
+        status: p.status === 'DITERBITKAN' ? 'Dipublikasikan' : (p.status === 'DRAFT' ? 'Draft' : 'Tertunda'),
+        price: p.tipeKamar[0] ? `Rp ${Number(p.tipeKamar[0].hargaDasar).toLocaleString('id-ID')}/malam` : 'Belum diatur',
+        bookings: p._count.pemesanan,
+        revenue: propRevenue
+      };
+    });
+
+    res.json({
+      status: 'success',
+      data: {
+        totalProperties: propertyIds.length,
+        totalBookings,
+        revenue,
+        occupancyRate: "78%", // Mocked for now as discussed
+        properties: formattedProperties
+      }
+    });
+
+  } catch (error) {
+    logger.error({ err: error }, 'Error saat mengambil dashboard host');
     next(error);
   }
 };

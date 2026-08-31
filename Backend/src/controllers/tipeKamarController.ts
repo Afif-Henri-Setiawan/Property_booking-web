@@ -43,11 +43,18 @@ export const updateTipeKamarSchema = z.object({
   }),
 });
 
-// Middleware helper to check if property belongs to host
 const checkPropertyOwnership = async (propertiId: string, penggunaId: string, peran: string) => {
   if (peran === 'ADMIN') return true;
-  const properti = await prisma.properti.findUnique({ where: { id: propertiId } });
-  return properti?.tuanRumahId === penggunaId;
+  if (peran === 'HOST') {
+    const properti = await prisma.properti.findUnique({ where: { id: propertiId } });
+    if (properti?.tuanRumahId === penggunaId) return true;
+
+    const isStaff = await prisma.propertyStaff.findUnique({
+      where: { propertiId_penggunaId: { propertiId, penggunaId } }
+    });
+    return isStaff?.staffRole === 'MANAGER';
+  }
+  return false;
 };
 
 export const getTipeKamarByProperti = async (req: Request, res: Response, next: NextFunction) => {

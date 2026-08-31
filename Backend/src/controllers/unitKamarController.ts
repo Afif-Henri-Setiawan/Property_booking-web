@@ -33,23 +33,42 @@ export const createBlokirSchema = z.object({
   }),
 });
 
-// Helper for ownership
 const checkTipeKamarOwnership = async (tipeKamarId: string, penggunaId: string, peran: string) => {
   if (peran === 'ADMIN') return true;
-  const tipeKamar = await prisma.tipeKamar.findUnique({
-    where: { id: tipeKamarId },
-    include: { properti: true }
-  });
-  return tipeKamar?.properti.tuanRumahId === penggunaId;
+  if (peran === 'HOST') {
+    const tipeKamar = await prisma.tipeKamar.findUnique({
+      where: { id: tipeKamarId },
+      include: { properti: true }
+    });
+    if (!tipeKamar) return false;
+    
+    if (tipeKamar.properti.tuanRumahId === penggunaId) return true;
+
+    const isStaff = await prisma.propertyStaff.findUnique({
+      where: { propertiId_penggunaId: { propertiId: tipeKamar.propertiId, penggunaId } }
+    });
+    return isStaff?.staffRole === 'MANAGER';
+  }
+  return false;
 };
 
 const checkUnitKamarOwnership = async (unitKamarId: string, penggunaId: string, peran: string) => {
   if (peran === 'ADMIN') return true;
-  const unitKamar = await prisma.unitKamar.findUnique({
-    where: { id: unitKamarId },
-    include: { tipeKamar: { include: { properti: true } } }
-  });
-  return unitKamar?.tipeKamar.properti.tuanRumahId === penggunaId;
+  if (peran === 'HOST') {
+    const unitKamar = await prisma.unitKamar.findUnique({
+      where: { id: unitKamarId },
+      include: { tipeKamar: { include: { properti: true } } }
+    });
+    if (!unitKamar) return false;
+    
+    if (unitKamar.tipeKamar.properti.tuanRumahId === penggunaId) return true;
+
+    const isStaff = await prisma.propertyStaff.findUnique({
+      where: { propertiId_penggunaId: { propertiId: unitKamar.tipeKamar.propertiId, penggunaId } }
+    });
+    return isStaff?.staffRole === 'MANAGER';
+  }
+  return false;
 };
 
 // --- Unit Kamar Controllers ---

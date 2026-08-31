@@ -10,11 +10,18 @@ import {
   updatePropertiSchema,
   getPendingProperties,
   verifyProperty,
-  verifyPropertySchema
+  verifyPropertySchema,
+  getHostDashboard
 } from '../controllers/propertiController';
 import { protect } from '../middlewares/authMiddleware';
 import { authorize } from '../middlewares/roleMiddleware';
 import { validate } from '../middlewares/validate';
+import { 
+  getPropertyStaff, 
+  addPropertyStaff, 
+  removePropertyStaff, 
+  addStaffSchema 
+} from '../controllers/propertiStaffController';
 
 const router = Router();
 
@@ -28,11 +35,17 @@ router.patch('/:id/verifikasi', protect, authorize('ADMIN'), validate(verifyProp
 
 // Endpoint dilindungi
 router.use(protect);
+router.get('/host/dashboard', authorize('HOST', 'ADMIN'), getHostDashboard);
 router.get('/host/my-properties', authorize('HOST', 'ADMIN'), getMyProperti);
 
 // Manajemen properti (Hanya Host / Admin)
 router.post('/', authorize('HOST', 'ADMIN'), validate(createPropertiSchema), createProperti);
 router.patch('/:id', authorize('HOST', 'ADMIN'), validate(updatePropertiSchema), updateProperti);
 router.delete('/:id', authorize('HOST', 'ADMIN'), deleteProperti);
+
+// Manajemen Staf Properti
+router.get('/:propertiId/staff', authorize('HOST', 'ADMIN'), getPropertyStaff);
+router.post('/:propertiId/staff', authorize('HOST', 'ADMIN'), validate(addStaffSchema), addPropertyStaff);
+router.delete('/:propertiId/staff/:staffId', authorize('HOST', 'ADMIN'), removePropertyStaff);
 
 export default router;
