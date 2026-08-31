@@ -163,7 +163,27 @@ export const updateProperti = async (req: AuthRequest, res: Response, next: Next
       return res.status(404).json({ status: 'error', message: 'Properti tidak ditemukan' });
     }
 
-    if (existing.tuanRumahId !== penggunaId && peran !== 'ADMIN') {
+    let isAuthorized = false;
+    
+    if (existing.tuanRumahId === penggunaId || peran === 'ADMIN') {
+        isAuthorized = true;
+    } else {
+        // Cek apakah pengguna adalah MANAGER untuk properti ini
+        const staffRecord = await prisma.propertyStaff.findUnique({
+            where: {
+                propertiId_penggunaId: {
+                    propertiId: id,
+                    penggunaId: penggunaId
+                }
+            }
+        });
+        
+        if (staffRecord && staffRecord.staffRole === 'MANAGER') {
+            isAuthorized = true;
+        }
+    }
+
+    if (!isAuthorized) {
       return res.status(403).json({ status: 'error', message: 'Tidak diizinkan mengubah properti ini' });
     }
 

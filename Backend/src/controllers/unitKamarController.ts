@@ -35,40 +35,36 @@ export const createBlokirSchema = z.object({
 
 const checkTipeKamarOwnership = async (tipeKamarId: string, penggunaId: string, peran: string) => {
   if (peran === 'ADMIN') return true;
-  if (peran === 'HOST') {
-    const tipeKamar = await prisma.tipeKamar.findUnique({
-      where: { id: tipeKamarId },
-      include: { properti: true }
-    });
-    if (!tipeKamar) return false;
-    
-    if (tipeKamar.properti.tuanRumahId === penggunaId) return true;
 
-    const isStaff = await prisma.propertyStaff.findUnique({
-      where: { propertiId_penggunaId: { propertiId: tipeKamar.propertiId, penggunaId } }
-    });
-    return isStaff?.staffRole === 'MANAGER';
-  }
-  return false;
+  const tipeKamar = await prisma.tipeKamar.findUnique({
+    where: { id: tipeKamarId },
+    include: { properti: true }
+  });
+  if (!tipeKamar) return false;
+  
+  if (tipeKamar.properti.tuanRumahId === penggunaId) return true;
+
+  const isStaff = await prisma.propertyStaff.findUnique({
+    where: { propertiId_penggunaId: { propertiId: tipeKamar.propertiId, penggunaId } }
+  });
+  return isStaff?.staffRole === 'MANAGER';
 };
 
 const checkUnitKamarOwnership = async (unitKamarId: string, penggunaId: string, peran: string) => {
   if (peran === 'ADMIN') return true;
-  if (peran === 'HOST') {
-    const unitKamar = await prisma.unitKamar.findUnique({
-      where: { id: unitKamarId },
-      include: { tipeKamar: { include: { properti: true } } }
-    });
-    if (!unitKamar) return false;
-    
-    if (unitKamar.tipeKamar.properti.tuanRumahId === penggunaId) return true;
 
-    const isStaff = await prisma.propertyStaff.findUnique({
-      where: { propertiId_penggunaId: { propertiId: unitKamar.tipeKamar.propertiId, penggunaId } }
-    });
-    return isStaff?.staffRole === 'MANAGER';
-  }
-  return false;
+  const unitKamar = await prisma.unitKamar.findUnique({
+    where: { id: unitKamarId },
+    include: { tipeKamar: { include: { properti: true } } }
+  });
+  if (!unitKamar) return false;
+  
+  if (unitKamar.tipeKamar.properti.tuanRumahId === penggunaId) return true;
+
+  const isStaff = await prisma.propertyStaff.findUnique({
+    where: { propertiId_penggunaId: { propertiId: unitKamar.tipeKamar.propertiId, penggunaId } }
+  });
+  return isStaff?.staffRole === 'MANAGER';
 };
 
 // --- Unit Kamar Controllers ---

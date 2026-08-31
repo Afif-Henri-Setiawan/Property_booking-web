@@ -47,6 +47,19 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  
+  /* Forest custom color scheme (matching emerald/green) */
+  --color-forest-50: #ecfdf5;
+  --color-forest-100: #d1fae5;
+  --color-forest-200: #a7f3d0;
+  --color-forest-300: #6ee7b7;
+  --color-forest-400: #34d399;
+  --color-forest-500: #10b981;
+  --color-forest-600: #059669;
+  --color-forest-700: #047857;
+  --color-forest-800: #065f46;
+  --color-forest-900: #064e3b;
+  --color-forest-950: #022c22;
 }
 
 :root {

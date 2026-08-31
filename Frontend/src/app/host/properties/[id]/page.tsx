@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Plus, Building, Users, BedDouble, Key, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Building, Users, BedDouble, Key, Trash2, Edit, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -152,7 +152,36 @@ export default function PropertyManagementPage() {
     });
   };
 
-  // --- DYNAMIC FACILITY ---
+  // --- DYNAMIC FACILITY & GEOCODING ---
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  const handleGeocode = async () => {
+    if (!propertyFormData.kota && !propertyFormData.provinsi) {
+      alert("Isi kota atau provinsi terlebih dahulu!");
+      return;
+    }
+    setIsGeocoding(true);
+    try {
+      const query = `${propertyFormData.kota || ''} ${propertyFormData.provinsi || ''}`.trim();
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setPropertyFormData(p => ({
+          ...p,
+          garisLintang: parseFloat(data[0].lat),
+          garisBujur: parseFloat(data[0].lon)
+        }));
+      } else {
+        alert("Lokasi tidak ditemukan berdasarkan kota/provinsi. Silakan geser pin secara manual.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Gagal mencari lokasi ke server peta.");
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   const handleAddFacility = async () => {
     if (!newFacilityName.trim()) return;
     setIsAddingFacility(true);
@@ -311,7 +340,7 @@ export default function PropertyManagementPage() {
     e.preventDefault();
     try {
       const token = await getToken();
-      const res = await fetch("http://localhost:5000/api/v1/unitkamar", {
+      const res = await fetch("http://localhost:5000/api/v1/unit-kamar", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ...unitFormData, tipeKamarId: selectedTkIdForUnit })
@@ -333,7 +362,7 @@ export default function PropertyManagementPage() {
     if (!confirm("Yakin ingin menghapus ruangan ini?")) return;
     try {
       const token = await getToken();
-      const res = await fetch(`http://localhost:5000/api/v1/unitkamar/${unitId}`, {
+      const res = await fetch(`http://localhost:5000/api/v1/unit-kamar/${unitId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -619,7 +648,13 @@ export default function PropertyManagementPage() {
 
               {/* Map Component */}
               <div className="grid gap-2 mt-2">
-                <Label>Pilih Titik Lokasi Peta (Geser Pin/Klik Peta)</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Pilih Titik Lokasi Peta (Geser Pin/Klik Peta)</Label>
+                  <Button type="button" size="sm" variant="secondary" onClick={handleGeocode} disabled={isGeocoding} className="h-8">
+                    {isGeocoding ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                    Cari Kota/Provinsi di Peta
+                  </Button>
+                </div>
                 <MapPicker 
                   position={{ lat: propertyFormData.garisLintang, lng: propertyFormData.garisBujur }}
                   onChange={pos => setPropertyFormData({...propertyFormData, garisLintang: pos.lat, garisBujur: pos.lng})}

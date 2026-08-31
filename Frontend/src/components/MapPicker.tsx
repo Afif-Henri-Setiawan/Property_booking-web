@@ -38,9 +38,10 @@ function LocationMarker({ position, onChange }: MapPickerProps) {
   // Re-center map if initial position is valid and we haven't clicked yet
   useEffect(() => {
     if (position.lat !== 0 || position.lng !== 0) {
-      map.flyTo([position.lat, position.lng], map.getZoom());
+      setPos(new L.LatLng(position.lat, position.lng));
+      map.flyTo([position.lat, position.lng], map.getZoom() > 10 ? map.getZoom() : 13);
     }
-  }, []);
+  }, [position.lat, position.lng, map]);
 
   return pos === null ? null : (
     <Marker 
