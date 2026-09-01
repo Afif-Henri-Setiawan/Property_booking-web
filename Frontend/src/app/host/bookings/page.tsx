@@ -163,11 +163,11 @@ export default function HostBookingsPage() {
                       <div className="flex flex-col gap-1 text-sm text-slate-700">
                         <div className="flex items-center gap-1.5">
                           <Calendar size={14} className="text-slate-400" />
-                          <span>In: {format(new Date(booking.detail?.[0]?.waktuMulai || booking.dibuatPada), "dd MMM yyyy", { locale: localeId })}</span>
+                          <span>In: {format(new Date(booking.waktuCheckIn || booking.dibuatPada), "dd MMM yyyy", { locale: localeId })}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Clock size={14} className="text-slate-400" />
-                          <span>Out: {format(new Date(booking.detail?.[0]?.waktuSelesai || booking.dibuatPada), "dd MMM yyyy", { locale: localeId })}</span>
+                          <span>Out: {format(new Date(booking.waktuCheckOut || booking.dibuatPada), "dd MMM yyyy", { locale: localeId })}</span>
                         </div>
                       </div>
                     </td>
@@ -201,7 +201,7 @@ export default function HostBookingsPage() {
                             Tandai Selesai
                           </button>
                         )}
-                        <Link href={`/user/bookings/${booking.id}`} target="_blank" className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                        <Link href={`/host/bookings/${booking.id}`} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
                           Detail
                         </Link>
                       </div>

@@ -86,7 +86,7 @@ export default function HostCalendarPage() {
                 <Select
                   value={selectedPropertyId}
                   onValueChange={(val) => {
-                    setSelectedPropertyId(val);
+                    setSelectedPropertyId(val as string);
                     const prop = properties.find(p => p.id === val);
                     if (prop && prop.tipeKamar && prop.tipeKamar.length > 0) {
                       setSelectedTipeKamar(prop.tipeKamar[0]);

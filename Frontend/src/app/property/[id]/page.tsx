@@ -21,6 +21,16 @@ export default async function PropertyDetail(props: { params: Promise<{ id: stri
     console.error("Backend Error:", res.status, res.statusText, errorText);
     throw new Error(`Failed to fetch property details: ${res.status} ${res.statusText}`);
   }
+  
+  // Fetch reviews
+  const resReviews = await fetch(`${apiUrl}/ulasan/properti/${id}`, { next: { revalidate: 0 } });
+  let reviews = [];
+  if (resReviews.ok) {
+    const revJson = await resReviews.json();
+    if (revJson.status === 'success') {
+      reviews = revJson.data;
+    }
+  }
 
   const json = await res.json();
   const property = json.data;
@@ -59,8 +69,14 @@ export default async function PropertyDetail(props: { params: Promise<{ id: stri
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wider">{propertyType}</span>
               <div className="flex items-center gap-1 text-primary">
                 <Star size={16} className="fill-yellow-500 text-yellow-500" />
-                <span>4.96</span>
-                <span className="text-gray-500 underline cursor-pointer hover:text-primary">(128 ulasan)</span>
+                <span>
+                  {reviews.length > 0 
+                    ? (reviews.reduce((acc: number, curr: any) => acc + curr.penilaian, 0) / reviews.length).toFixed(1) 
+                    : "0"}
+                </span>
+                <Link href="#ulasan" className="text-gray-500 underline cursor-pointer hover:text-primary">
+                  ({reviews.length} ulasan)
+                </Link>
               </div>
               <span className="text-gray-300">•</span>
               <div className="flex items-center gap-1 text-gray-600">

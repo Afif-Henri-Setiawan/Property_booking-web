@@ -3,6 +3,7 @@
 import { Users, BedDouble, Bath, MapPin, Wifi, Tv, Coffee, Car, CheckCircle2 } from "lucide-react";
 import BookingWidget from "@/components/property/BookingWidget";
 import dynamic from 'next/dynamic';
+import ReviewList from "@/components/property/ReviewList";
 
 const MapPicker = dynamic(() => import('@/components/MapPicker'), { 
   ssr: false,
@@ -180,6 +181,8 @@ export default function PropertyDetailsClient({ property }: { property: any }) {
             </p>
           </div>
         </div>
+
+        <ReviewList propertyId={property.id} />
       </div>
 
       {/* Right Column (Sticky Booking Widget) */}

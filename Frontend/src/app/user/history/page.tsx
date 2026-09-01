@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { Calendar, MapPin, Building, CreditCard, ChevronRight } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
+import ReviewModal from "@/components/user/ReviewModal";
+import { toast } from "sonner";
 
 interface Booking {
   id: string;
@@ -27,6 +29,9 @@ export default function HistoryPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string>("");
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -139,6 +144,14 @@ export default function HistoryPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <ReviewModal 
+        isOpen={isReviewModalOpen} 
+        onClose={() => setIsReviewModalOpen(false)} 
+        bookingId={selectedBookingId}
+        onSuccess={() => {
+          toast.success("Ulasan berhasil dikirim!");
+        }}
+      />
       <div>
         <h1 className="text-2xl font-bold text-[#1E2A4F]">Riwayat Pesanan</h1>
         <p className="text-gray-500 text-sm mt-1">Lihat dan kelola pesanan Anda yang sudah dibayar atau selesai.</p>
@@ -211,9 +224,22 @@ export default function HistoryPage() {
                     <CreditCard size={12} /> {booking.statusPembayaran}
                   </span>
                 </div>
-                <Link href={`/user/bookings/${booking.id}`} className="w-full md:w-auto px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-50 hover:text-black transition-colors text-center">
-                  Lihat Detail
-                </Link>
+                <div className="flex gap-2 w-full md:w-auto">
+                  {booking.statusPemesanan === 'SELESAI' && (
+                    <button 
+                      onClick={() => {
+                        setSelectedBookingId(booking.id);
+                        setIsReviewModalOpen(true);
+                      }}
+                      className="flex-1 md:flex-none px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-xl hover:bg-primary/90 transition-colors text-center"
+                    >
+                      Beri Ulasan
+                    </button>
+                  )}
+                  <Link href={`/user/bookings/${booking.id}`} className="flex-1 md:flex-none px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-50 hover:text-black transition-colors text-center">
+                    Detail
+                  </Link>
+                </div>
               </div>
 
             </div>
