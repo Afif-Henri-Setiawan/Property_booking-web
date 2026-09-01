@@ -243,12 +243,12 @@ export default function BookingDetailPage() {
           <ChevronLeft size={16} /> Kembali ke Riwayat Pesanan
         </Link>
         {(booking.status === 'DIKONFIRMASI' || booking.status === 'SELESAI') && (
-          <button 
-            onClick={() => window.print()}
+          <Link 
+            href={`/user/bookings/${booking.id}/invoice`}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-colors shadow-sm"
           >
-            <Printer size={16} /> Cetak E-Tiket
-          </button>
+            <Printer size={16} /> Lihat Invoice
+          </Link>
         )}
       </div>
 

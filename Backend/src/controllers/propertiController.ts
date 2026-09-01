@@ -346,6 +346,27 @@ export const getHostDashboard = async (req: AuthRequest, res: Response, next: Ne
 
     const revenue = pemesananList.reduce((acc, curr) => acc + Number(curr.totalHarga), 0);
 
+    const today = new Date();
+    const totalUnits = await prisma.unitKamar.count({
+      where: { tipeKamar: { propertiId: { in: propertyIds } } }
+    });
+    
+    // Hitung jumlah unit yang sedang disewa HARI INI
+    const occupiedUnits = await prisma.detailPemesanan.count({
+      where: {
+        pemesanan: {
+          propertiId: { in: propertyIds },
+          status: { in: ['DIKONFIRMASI', 'CHECK_IN'] },
+          tanggalMulai: { lte: today },
+          tanggalSelesai: { gt: today }
+        }
+      }
+    });
+
+    const calculatedOccupancyRate = totalUnits > 0 
+      ? Math.round((occupiedUnits / totalUnits) * 100) + "%" 
+      : "0%";
+
     const formattedProperties = properties.map(p => {
       const propBookings = pemesananList.filter(b => b.propertiId === p.id);
       const propRevenue = propBookings.reduce((acc, curr) => acc + Number(curr.totalHarga), 0);
@@ -366,7 +387,7 @@ export const getHostDashboard = async (req: AuthRequest, res: Response, next: Ne
         totalProperties: propertyIds.length,
         totalBookings,
         revenue,
-        occupancyRate: "78%", // Mocked for now as discussed
+        occupancyRate: calculatedOccupancyRate,
         properties: formattedProperties
       }
     });

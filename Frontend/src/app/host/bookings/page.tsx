@@ -154,9 +154,16 @@ export default function HostBookingsPage() {
                           <MapPin size={14} className="text-slate-400" />
                           {booking.properti?.nama || "Properti"}
                         </span>
-                        <span className="text-sm text-slate-500 mt-1">
-                          {booking.detail?.[0]?.tipeKamar?.nama || "Kamar"}
-                        </span>
+                        <div className="flex items-center flex-wrap gap-2 mt-1">
+                          <span className="text-sm text-slate-500">
+                            {booking.detail?.[0]?.tipeKamar?.nama || "Kamar"}
+                          </span>
+                          {booking.detail?.filter((d: any) => d.unitKamar?.nomorUnit).map((d: any, idx: number) => (
+                            <span key={idx} className="bg-forest-100 text-forest-700 text-xs px-2 py-0.5 rounded font-bold whitespace-nowrap">
+                              {d.unitKamar.nomorUnit}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">

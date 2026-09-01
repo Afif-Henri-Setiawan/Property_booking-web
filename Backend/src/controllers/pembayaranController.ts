@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { logger } from '../utils/logger';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { snap } from '../utils/midtrans';
+import { sendInvoiceEmail } from '../utils/emailSender';
 
 const prisma = new PrismaClient();
 
@@ -135,10 +136,28 @@ export const webhookPembayaran = async (req: Request, res: Response, next: NextF
     }
 
     if (statusPemesanan !== 'MENUNGGU_PEMBAYARAN') {
-      await prisma.pemesanan.update({
+      const updatedPemesanan = await prisma.pemesanan.update({
         where: { id: pembayaran.pemesananId },
-        data: { status: statusPemesanan as any }
+        data: { status: statusPemesanan as any },
+        include: {
+          tamu: true,
+          properti: true
+        }
       });
+
+      // Kirim email invoice jika status menjadi DIKONFIRMASI
+      if (statusPemesanan === 'DIKONFIRMASI' && updatedPemesanan.tamu) {
+        sendInvoiceEmail({
+          tamuEmail: updatedPemesanan.tamu.email,
+          tamuNama: updatedPemesanan.tamu.nama,
+          nomorPemesanan: updatedPemesanan.id.split('-')[0].toUpperCase(),
+          namaProperti: updatedPemesanan.properti.nama,
+          totalHarga: Number(updatedPemesanan.totalHarga),
+          waktuCheckIn: updatedPemesanan.tanggalMulai.toISOString().split('T')[0],
+          waktuCheckOut: updatedPemesanan.tanggalSelesai.toISOString().split('T')[0],
+          pemesananId: updatedPemesanan.id
+        }).catch(err => logger.error({ err }, 'Gagal mengirim email secara asinkron di webhook'));
+      }
     }
 
     res.json({ status: 'success', message: 'Notifikasi pembayaran berhasil diproses' });

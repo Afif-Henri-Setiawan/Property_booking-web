@@ -11,6 +11,7 @@ export default function ProfilePage() {
       {/* Container for Clerk UserProfile */}
       <div className="flex justify-center md:justify-start">
         <UserProfile 
+          routing="hash"
           appearance={{
             elements: {
               card: "shadow-none border border-gray-100 rounded-xl",
