@@ -2,6 +2,12 @@
 
 import { Users, BedDouble, Bath, MapPin, Wifi, Tv, Coffee, Car, CheckCircle2 } from "lucide-react";
 import BookingWidget from "@/components/property/BookingWidget";
+import dynamic from 'next/dynamic';
+
+const MapPicker = dynamic(() => import('@/components/MapPicker'), { 
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-slate-100 flex items-center justify-center animate-pulse text-slate-500">Memuat Peta...</div>
+});
 
 // A small helper to pick an icon based on amenity name
 function getAmenityIcon(name: string) {
@@ -134,15 +140,44 @@ export default function PropertyDetailsClient({ property }: { property: any }) {
           </div>
 
           <div className="flex-1 flex flex-col gap-6">
-            <h3 className="text-xl font-semibold text-primary">Lokasi Anda</h3>
-            <div className="w-full h-[150px] bg-gray-100 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden relative shadow-inner">
-              <MapPin size={40} className="text-red-500 drop-shadow-md absolute z-10" />
-              <div className="absolute inset-0 opacity-20" style={{
-                backgroundImage: "radial-gradient(#1b3b36 1px, transparent 1px)",
-                backgroundSize: "20px 20px"
-              }}></div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-primary">Lokasi Anda</h3>
+              {(property.garisLintang !== undefined && property.garisLintang !== null) && 
+               (property.garisBujur !== undefined && property.garisBujur !== null) && (
+                <a 
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${property.garisLintang},${property.garisBujur}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                >
+                  <MapPin size={16} /> Buka di Maps
+                </a>
+              )}
             </div>
-            <p className="text-sm text-gray-600">{property.kota}, {property.provinsi}</p>
+            
+            <div className="w-full h-[300px] bg-gray-100 rounded-2xl flex overflow-hidden relative shadow-inner">
+              {(property.garisLintang !== undefined && property.garisLintang !== null) && 
+               (property.garisBujur !== undefined && property.garisBujur !== null) ? (
+                <div className="w-full h-full relative isolate z-0">
+                  <MapPicker 
+                    position={{ lat: property.garisLintang, lng: property.garisBujur }}
+                    readOnly={true}
+                  />
+                </div>
+              ) : (
+                <>
+                  <MapPin size={40} className="text-red-500 drop-shadow-md absolute z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                  <div className="absolute inset-0 opacity-20" style={{
+                    backgroundImage: "radial-gradient(#1b3b36 1px, transparent 1px)",
+                    backgroundSize: "20px 20px"
+                  }}></div>
+                </>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 font-medium bg-gray-50 p-3 rounded-lg border border-gray-100 inline-block w-fit">
+              <MapPin size={16} className="inline mr-2 text-primary" />
+              {property.kota}, {property.provinsi}
+            </p>
           </div>
         </div>
       </div>

@@ -20,18 +20,20 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 interface MapPickerProps {
   position: { lat: number; lng: number };
-  onChange: (position: { lat: number; lng: number }) => void;
+  onChange?: (position: { lat: number; lng: number }) => void;
+  readOnly?: boolean;
 }
 
-function LocationMarker({ position, onChange }: MapPickerProps) {
+function LocationMarker({ position, onChange, readOnly }: MapPickerProps) {
   const [pos, setPos] = useState<L.LatLng | null>(
     position.lat !== 0 || position.lng !== 0 ? new L.LatLng(position.lat, position.lng) : null
   );
 
   const map = useMapEvents({
     click(e) {
+      if (readOnly) return;
       setPos(e.latlng);
-      onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
+      if (onChange) onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });
 
@@ -46,20 +48,21 @@ function LocationMarker({ position, onChange }: MapPickerProps) {
   return pos === null ? null : (
     <Marker 
       position={pos} 
-      draggable={true}
+      draggable={!readOnly}
       eventHandlers={{
         dragend: (e) => {
+          if (readOnly) return;
           const marker = e.target;
           const pos = marker.getLatLng();
           setPos(pos);
-          onChange({ lat: pos.lat, lng: pos.lng });
+          if (onChange) onChange({ lat: pos.lat, lng: pos.lng });
         }
       }}
     />
   );
 }
 
-export default function MapPicker({ position, onChange }: MapPickerProps) {
+export default function MapPicker({ position, onChange, readOnly }: MapPickerProps) {
   // Default to Indonesia center if 0,0
   const center = position.lat !== 0 || position.lng !== 0 
     ? [position.lat, position.lng] 
@@ -69,15 +72,16 @@ export default function MapPicker({ position, onChange }: MapPickerProps) {
     <div className="h-[300px] w-full rounded-md overflow-hidden border border-slate-200">
       <MapContainer 
         center={center as [number, number]} 
-        zoom={5} 
-        scrollWheelZoom={true} 
+        zoom={13} 
+        scrollWheelZoom={!readOnly} 
+        dragging={!readOnly}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <LocationMarker position={position} onChange={onChange} />
+        <LocationMarker position={position} onChange={onChange} readOnly={readOnly} />
       </MapContainer>
     </div>
   );

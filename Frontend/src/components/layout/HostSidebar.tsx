@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Home, Calendar, Settings } from "lucide-react";
+import { LayoutDashboard, Home, Calendar, Settings, CalendarDays } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
 export function HostSidebar() {
@@ -11,6 +11,7 @@ export function HostSidebar() {
   const navItems = [
     { name: "Dashboard", href: "/host/dashboard", icon: LayoutDashboard },
     { name: "Properties", href: "/host/properties", icon: Home },
+    { name: "Ketersediaan", href: "/host/calendar", icon: CalendarDays },
     { name: "Bookings", href: "/host/bookings", icon: Calendar },
     { name: "Settings", href: "/host/settings", icon: Settings },
   ];

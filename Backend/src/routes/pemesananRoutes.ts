@@ -11,13 +11,17 @@ import {
   createWalkInBookingSchema,
   createWalkInBooking,
   getTiketByNomor,
-  getPemesananById
+  getPemesananById,
+  checkAvailability
 } from '../controllers/pemesananController';
 import { protect } from '../middlewares/authMiddleware';
 import { authorize } from '../middlewares/roleMiddleware';
 import { validate } from '../middlewares/validate';
 
 const router = Router();
+
+// Endpoint publik
+router.post('/check-availability', checkAvailability);
 
 // Semua endpoint pemesanan harus login
 router.use(protect);

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Star, ChevronRight, Minus, Plus, BedDouble, CheckCircle2 } from "lucide-react";
+import { Star, ChevronRight, Minus, Plus, BedDouble, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface BookingWidgetProps {
   propertyId: string;
@@ -38,6 +40,10 @@ export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidg
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [isChecking, setIsChecking] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogStatus, setDialogStatus] = useState<'success' | 'error'>('success');
+  const [dialogMessage, setDialogMessage] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   // Calculate constraints based on cart
@@ -85,7 +91,7 @@ export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidg
     setErrorMsg("");
   };
 
-  const handleCheckAvailability = () => {
+  const handleCheckAvailability = async () => {
     setErrorMsg("");
 
     if (!checkIn) {
@@ -108,17 +114,54 @@ export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidg
       return;
     }
 
-    // Build the cart array for the URL
+    // Build the cart array for the API and URL
     const cartArray = Object.entries(cart).map(([roomId, count]) => ({
-      roomId,
-      count
+      tipeKamarId: roomId,
+      roomId, // Used for URL later
+      jumlahKamar: count,
+      count // Used for URL later
     }));
 
+    setIsChecking(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+      const res = await fetch(`${apiUrl}/pemesanan/check-availability`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          propertiId: propertyId,
+          checkIn,
+          checkOut,
+          kamar: cartArray
+        })
+      });
+
+      const result = await res.json();
+      
+      setDialogStatus(result.status === 'success' ? 'success' : 'error');
+      setDialogMessage(result.message);
+      setIsDialogOpen(true);
+    } catch (err) {
+      console.error(err);
+      setDialogStatus('error');
+      setDialogMessage("Gagal terhubung ke server untuk mengecek ketersediaan.");
+      setIsDialogOpen(true);
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const handleProceedToPayment = () => {
     const params = new URLSearchParams();
     params.set("checkIn", checkIn);
     params.set("checkOut", checkOut);
     params.set("guests", guests.toString());
-    params.set("cart", JSON.stringify(cartArray));
+    
+    // Convert back to format expected by book page
+    const cartForUrl = Object.entries(cart).map(([roomId, count]) => ({ roomId, count }));
+    params.set("cart", JSON.stringify(cartForUrl));
     
     router.push(`/property/${propertyId}/book?${params.toString()}`);
   };
@@ -346,9 +389,17 @@ export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidg
           )}
           <button 
             onClick={handleCheckAvailability}
-            className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-colors shadow-md flex items-center justify-center gap-2"
+            disabled={isChecking}
+            className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg hover:bg-primary/90 transition-colors shadow-md flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Cek Ketersediaan
+            {isChecking ? (
+              <>
+                <Loader2 className="animate-spin" size={24} />
+                Mengecek...
+              </>
+            ) : (
+              "Cek Ketersediaan"
+            )}
           </button>
         </div>
       </div>
@@ -356,6 +407,44 @@ export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidg
       <div className="text-center text-sm text-gray-500 pt-2 border-t border-gray-100">
         Anda belum akan dikenakan biaya
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full mb-2">
+              {dialogStatus === 'success' ? (
+                <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+              ) : (
+                <XCircle className="h-12 w-12 text-rose-500" />
+              )}
+            </div>
+            <DialogTitle className="text-center text-xl font-bold">
+              {dialogStatus === 'success' ? 'Kamar Tersedia!' : 'Kamar Tidak Tersedia'}
+            </DialogTitle>
+            <DialogDescription className="text-center pt-2 text-base text-gray-600">
+              {dialogMessage}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center pt-4">
+            {dialogStatus === 'success' ? (
+              <Button 
+                onClick={handleProceedToPayment}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-6 text-lg font-bold"
+              >
+                Lanjutkan Pembayaran
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setIsDialogOpen(false)}
+                variant="outline"
+                className="w-full rounded-xl py-6 text-lg font-bold"
+              >
+                Tutup
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

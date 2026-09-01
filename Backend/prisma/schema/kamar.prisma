@@ -20,6 +20,19 @@ model TipeKamar {
   paketHarga PaketHarga[]
   unit       UnitKamar[]
   pemesanan  DetailPemesanan[]
+  tanggalBlokir TanggalBlokir[]
+}
+
+model TanggalBlokir {
+  id          String   @id @default(uuid())
+  tipeKamarId String
+  tanggal     DateTime @db.Date
+  alasan      String?  @db.Text
+  dibuatPada  DateTime @default(now())
+
+  tipeKamar   TipeKamar @relation(fields: [tipeKamarId], references: [id], onDelete: Cascade)
+
+  @@unique([tipeKamarId, tanggal])
 }
 
 model FotoTipeKamar {
