@@ -53,12 +53,26 @@ export const updatePropertiSchema = z.object({
 export const getMyProperti = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const tuanRumahId = req.pengguna.id as string;
+    
+    // Cari properti di mana pengguna adalah MANAGER
+    const myStaffProperties = await prisma.propertyStaff.findMany({
+      where: { penggunaId: tuanRumahId, staffRole: 'MANAGER' },
+      select: { propertiId: true }
+    });
+    const staffPropertyIds = myStaffProperties.map(p => p.propertiId);
+
     const properti = await prisma.properti.findMany({
-      where: { tuanRumahId },
+      where: { 
+        OR: [
+          { tuanRumahId },
+          { id: { in: staffPropertyIds } }
+        ]
+      },
       include: {
         tipe: true,
         fasilitas: { include: { fasilitas: true } },
         foto: true,
+        tipeKamar: true,
       },
     });
     res.json({ status: 'success', data: properti });

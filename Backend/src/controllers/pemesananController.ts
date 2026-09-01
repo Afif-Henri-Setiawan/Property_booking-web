@@ -86,6 +86,21 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
         return res.status(404).json({ status: 'error', message: 'Paket harga tidak valid' });
       }
 
+      // Cek Tanggal Blokir
+      const blockedDates = await prisma.tanggalBlokir.findMany({
+        where: {
+          tipeKamarId: item.tipeKamarId,
+          tanggal: {
+            gte: checkInDate,
+            lt: checkOutDate, // lt karena hari checkout tidak dihitung menginap
+          }
+        }
+      });
+
+      if (blockedDates.length > 0) {
+        return res.status(400).json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} sedang ditutup/diblokir pada sebagian atau seluruh tanggal yang Anda pilih` });
+      }
+
       // Cek Ketersediaan Unit Fisik
       const countPemesanan = await prisma.unitKamar.count({
         where: {
@@ -552,5 +567,66 @@ export const getTiketByNomor = async (req: Request, res: Response, next: NextFun
   } catch (error) {
     logger.error({ err: error }, 'Error mengambil tiket');
     next(error);
+  }
+};
+
+export const checkAvailability = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { propertiId, checkIn, checkOut, kamar } = req.body;
+
+    if (!propertiId || !checkIn || !checkOut || !kamar || !Array.isArray(kamar)) {
+      return res.status(400).json({ status: 'error', message: 'Data tidak lengkap' });
+    }
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    if (checkInDate >= checkOutDate) {
+      return res.status(400).json({ status: 'error', message: 'Tanggal Check-out harus setelah Check-in' });
+    }
+
+    for (const item of kamar) {
+      const tipeKamar = await prisma.tipeKamar.findUnique({
+        where: { id: item.tipeKamarId, propertiId, status: 'AKTIF' }
+      });
+
+      if (!tipeKamar) {
+        return res.json({ status: 'error', message: `Tipe kamar tidak ditemukan atau tidak aktif`, data: { available: false } });
+      }
+
+      // Cek Tanggal Blokir
+      const blockedDates = await prisma.tanggalBlokir.findMany({
+        where: {
+          tipeKamarId: item.tipeKamarId,
+          tanggal: {
+            gte: checkInDate,
+            lt: checkOutDate, // lt karena hari checkout tidak dihitung menginap
+          }
+        }
+      });
+
+      if (blockedDates.length > 0) {
+        return res.json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} sedang ditutup/diblokir pada rentang tanggal yang Anda pilih`, data: { available: false } });
+      }
+
+      // Cek Ketersediaan Unit Fisik
+      const countPemesanan = await prisma.unitKamar.count({
+        where: {
+          tipeKamarId: item.tipeKamarId,
+          status: 'TERSEDIA',
+          blokir: { none: { status: 'AKTIF', tanggalMulai: { lt: checkOutDate }, tanggalSelesai: { gt: checkInDate } } },
+          pemesanan: { none: { pemesanan: { status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] }, waktuCheckIn: { lt: checkOutDate }, waktuCheckOut: { gt: checkInDate } } } }
+        }
+      });
+
+      if (countPemesanan < item.jumlahKamar) {
+        return res.json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} hanya tersisa ${countPemesanan} unit pada rentang tanggal tersebut`, data: { available: false } });
+      }
+    }
+
+    return res.json({ status: 'success', message: 'Kamar tersedia', data: { available: true } });
+  } catch (error) {
+    logger.error({ err: error }, 'Error checkAvailability');
+    return res.status(500).json({ status: 'error', message: 'Terjadi kesalahan pada server' });
   }
 };

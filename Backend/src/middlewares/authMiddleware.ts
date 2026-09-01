@@ -56,7 +56,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
           email: primaryEmail,
           nama: nama,
           kataSandi: "CLERK_MANAGED_OAUTH",
-          peran: 'GUEST'
+          role: 'GUEST'
         }
       });
     }
