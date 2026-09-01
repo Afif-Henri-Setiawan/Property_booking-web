@@ -22,6 +22,7 @@ interface Booking {
   tipeKamar: {
     nama: string;
   };
+  hasUlasan: boolean;
 }
 
 export default function HistoryPage() {
@@ -66,7 +67,8 @@ export default function HistoryPage() {
             },
             tipeKamar: {
               nama: b.detail && b.detail.length > 0 ? b.detail[0].tipeKamar?.nama || "-" : "-"
-            }
+            },
+            hasUlasan: !!b.ulasan
           }));
           const filteredHistory = mappedBookings.filter((b: Booking) => 
             ['DIKONFIRMASI', 'SELESAI', 'DIBATALKAN'].includes(b.statusPemesanan)
@@ -94,7 +96,8 @@ export default function HistoryPage() {
             },
             tipeKamar: {
               nama: "Deluxe Ocean View"
-            }
+            },
+            hasUlasan: false
           },
           {
             id: "mock-2",
@@ -109,7 +112,8 @@ export default function HistoryPage() {
             },
             tipeKamar: {
               nama: "Studio Premium"
-            }
+            },
+            hasUlasan: true
           }
         ]);
       } finally {
@@ -225,7 +229,7 @@ export default function HistoryPage() {
                   </span>
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                  {booking.statusPemesanan === 'SELESAI' && (
+                  {booking.statusPemesanan === 'SELESAI' && !booking.hasUlasan && (
                     <button 
                       onClick={() => {
                         setSelectedBookingId(booking.id);
@@ -235,6 +239,11 @@ export default function HistoryPage() {
                     >
                       Beri Ulasan
                     </button>
+                  )}
+                  {booking.statusPemesanan === 'SELESAI' && booking.hasUlasan && (
+                    <span className="flex-1 md:flex-none px-6 py-2.5 bg-green-50 text-green-600 border border-green-200 font-semibold text-sm rounded-xl text-center flex items-center justify-center">
+                      ✓ Sudah Dinilai
+                    </span>
                   )}
                   <Link href={`/user/bookings/${booking.id}`} className="flex-1 md:flex-none px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-50 hover:text-black transition-colors text-center">
                     Detail

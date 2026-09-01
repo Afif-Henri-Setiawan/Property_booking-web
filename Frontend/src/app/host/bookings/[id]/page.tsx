@@ -114,6 +114,14 @@ export default function HostBookingDetailPage() {
         <Link href="/host/bookings" className="flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors">
           <ChevronLeft size={16} /> Kembali ke Daftar Pesanan
         </Link>
+        {(booking.status === 'DIKONFIRMASI' || booking.status === 'SELESAI') && (
+          <Link 
+            href={`/host/bookings/${booking.id}/invoice`}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+          >
+            Lihat Invoice
+          </Link>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">

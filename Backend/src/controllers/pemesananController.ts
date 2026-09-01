@@ -135,13 +135,15 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
       const subtotalItem = hargaSatuan * jumlahMalam * item.jumlahKamar;
       totalSubtotal += subtotalItem;
 
-      detailPemesanan.push({
-        tipeKamarId: item.tipeKamarId,
-        paketHargaId: item.paketHargaId,
-        jumlahKamar: item.jumlahKamar,
-        hargaSatuan,
-        subtotal: subtotalItem
-      });
+      for (let i = 0; i < item.jumlahKamar; i++) {
+        detailPemesanan.push({
+          tipeKamarId: item.tipeKamarId,
+          paketHargaId: item.paketHargaId,
+          jumlahKamar: 1, // Split menjadi per kamar
+          hargaSatuan,
+          subtotal: hargaSatuan * jumlahMalam
+        });
+      }
     }
 
     const totalTamu = dewasa + anak;
@@ -211,7 +213,8 @@ export const getMyBookings = async (req: AuthRequest, res: Response, next: NextF
       orderBy: { dibuatPada: 'desc' },
       include: {
         properti: { select: { nama: true, kota: true } },
-        detail: { include: { tipeKamar: { select: { nama: true } } } }
+        detail: { include: { tipeKamar: { select: { nama: true } } } },
+        ulasan: { select: { id: true } }
       }
     });
     res.json({ status: 'success', data: pemesanan });
@@ -248,7 +251,7 @@ export const getHostBookings = async (req: AuthRequest, res: Response, next: Nex
       orderBy: { dibuatPada: 'desc' },
       include: {
         properti: { select: { nama: true } },
-        detail: { include: { tipeKamar: { select: { nama: true } } } },
+        detail: { include: { tipeKamar: { select: { nama: true } }, unitKamar: { select: { nomorUnit: true } } } },
         tamu: { select: { nama: true, email: true } }
       }
     });
@@ -280,7 +283,7 @@ export const getPemesananById = async (req: AuthRequest, res: Response, next: Ne
       where: { id },
       include: {
         properti: {
-          select: { id: true, nama: true, kota: true, alamat: true, tuanRumahId: true, foto: true }
+          select: { id: true, nama: true, kota: true, alamat: true, tuanRumahId: true, foto: true, tuanRumah: { select: { nama: true, email: true } } }
         },
         detail: {
           include: {

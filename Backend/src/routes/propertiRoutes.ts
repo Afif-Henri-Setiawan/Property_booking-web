@@ -27,7 +27,6 @@ const router = Router();
 
 // Endpoint publik (Landing Page / Pencarian Umum)
 router.get('/', getPropertiPublik);
-router.get('/:id', getPropertiById);
 
 // Endpoint Admin Khusus
 router.get('/pending', protect, authorize('ADMIN'), getPendingProperties);
@@ -40,6 +39,9 @@ router.get('/host/my-properties', authorize('HOST', 'ADMIN'), getMyProperti);
 
 // Manajemen properti (Hanya Host / Admin)
 router.post('/', authorize('HOST', 'ADMIN'), validate(createPropertiSchema), createProperti);
+
+// Dynamic routes (Taruh di bawah agar tidak konflik dengan /pending atau /host/dashboard)
+router.get('/:id', getPropertiById);
 router.patch('/:id', authorize('HOST', 'ADMIN'), validate(updatePropertiSchema), updateProperti);
 router.delete('/:id', authorize('HOST', 'ADMIN'), deleteProperti);
 
