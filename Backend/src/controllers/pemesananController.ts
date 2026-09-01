@@ -101,18 +101,34 @@ export const createPemesanan = async (req: AuthRequest, res: Response, next: Nex
         return res.status(400).json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} sedang ditutup/diblokir pada sebagian atau seluruh tanggal yang Anda pilih` });
       }
 
-      // Cek Ketersediaan Unit Fisik
-      const countPemesanan = await prisma.unitKamar.count({
+      // Cek Ketersediaan Kamar
+      const totalUnits = await prisma.unitKamar.count({
         where: {
           tipeKamarId: item.tipeKamarId,
-          status: 'TERSEDIA',
-          blokir: { none: { status: 'AKTIF', tanggalMulai: { lt: checkOutDate }, tanggalSelesai: { gt: checkInDate } } },
-          pemesanan: { none: { pemesanan: { status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] }, waktuCheckIn: { lt: checkOutDate }, waktuCheckOut: { gt: checkInDate } } } }
+          status: { in: ['TERSEDIA', 'TERISI'] },
+          blokir: { none: { status: 'AKTIF', tanggalMulai: { lt: checkOutDate }, tanggalSelesai: { gt: checkInDate } } }
         }
       });
 
-      if (countPemesanan < item.jumlahKamar) {
-        return res.status(400).json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} tidak tersedia dalam jumlah yang diminta` });
+      const overlappingBookings = await prisma.detailPemesanan.aggregate({
+        _sum: {
+          jumlahKamar: true
+        },
+        where: {
+          tipeKamarId: item.tipeKamarId,
+          pemesanan: {
+            status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] },
+            waktuCheckIn: { lt: checkOutDate },
+            waktuCheckOut: { gt: checkInDate }
+          }
+        }
+      });
+
+      const bookedRoomsCount = overlappingBookings._sum.jumlahKamar || 0;
+      const availableRoomsCount = totalUnits - bookedRoomsCount;
+
+      if (availableRoomsCount < item.jumlahKamar) {
+        return res.status(400).json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} pada rentang waktu yang dipilih telah penuh. Anda bisa ganti jadwal atau ubah ke tipe kamar lain yang tersedia.` });
       }
 
       const hargaSatuan = Number(paketHarga.harga);
@@ -269,7 +285,8 @@ export const getPemesananById = async (req: AuthRequest, res: Response, next: Ne
         detail: {
           include: {
             tipeKamar: { select: { id: true, nama: true, foto: true } },
-            paketHarga: { select: { id: true, nama: true } }
+            paketHarga: { select: { id: true, nama: true } },
+            unitKamar: { select: { id: true, nomorUnit: true } }
           }
         },
         tamuPemesanan: true,
@@ -282,11 +299,18 @@ export const getPemesananById = async (req: AuthRequest, res: Response, next: Ne
       return res.status(404).json({ status: 'error', message: 'Pemesanan tidak ditemukan' });
     }
 
-    // Hanya tamu bersangkutan atau tuan rumah/admin yang bisa melihat
-    if (peran === 'GUEST' && pemesanan.tamuId !== penggunaId) {
-      return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
-    }
-    if (peran === 'HOST' && pemesanan.properti.tuanRumahId !== penggunaId) {
+    // Cek apakah pengguna adalah staf untuk properti ini
+    const isStaff = await prisma.propertyStaff.findUnique({
+      where: {
+        propertiId_penggunaId: {
+          propertiId: pemesanan.properti.id,
+          penggunaId: penggunaId
+        }
+      }
+    });
+
+    // Hanya tamu bersangkutan, tuan rumah, atau staf yang bisa melihat
+    if (pemesanan.tamuId !== penggunaId && pemesanan.properti.tuanRumahId !== penggunaId && !isStaff) {
       return res.status(403).json({ status: 'error', message: 'Akses ditolak' });
     }
 
@@ -325,6 +349,57 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response, next:
       });
       if (!isStaff) {
         return res.status(403).json({ status: 'error', message: 'Tidak diizinkan mengubah pemesanan ini' });
+      }
+    }
+
+    if (status === 'CHECK_IN') {
+      const details = await prisma.detailPemesanan.findMany({ where: { pemesananId: id } });
+      for (const detail of details) {
+        if (!detail.unitKamarId) {
+          // Cari kamar yang tersedia untuk tipe ini
+          const availableUnits = await prisma.unitKamar.findMany({
+            where: { tipeKamarId: detail.tipeKamarId, status: 'TERSEDIA' },
+            take: detail.jumlahKamar
+          });
+
+          if (availableUnits.length < detail.jumlahKamar) {
+            return res.status(400).json({ status: 'error', message: 'Kamar tidak cukup/tersedia untuk check-in' });
+          }
+
+          // Untuk saat ini, kita gunakan unit pertama untuk detail ini
+          // (ideal: jika jumlahKamar > 1, skema perlu mendukung multiple unitKamar per detail)
+          const assignedUnit = availableUnits[0];
+
+          await prisma.detailPemesanan.update({
+            where: { id: detail.id },
+            data: { unitKamarId: assignedUnit.id }
+          });
+
+          await prisma.checkIn.create({
+            data: {
+              pemesananId: id,
+              unitKamarId: assignedUnit.id,
+              discanOleh: req.pengguna.nama || penggunaId
+            }
+          });
+
+          await prisma.unitKamar.update({
+            where: { id: assignedUnit.id },
+            data: { status: 'TERISI' }
+          });
+        }
+      }
+    }
+
+    if (status === 'SELESAI' || status === 'DIBATALKAN') {
+      const details = await prisma.detailPemesanan.findMany({ where: { pemesananId: id } });
+      for (const detail of details) {
+        if (detail.unitKamarId) {
+          await prisma.unitKamar.update({
+            where: { id: detail.unitKamarId },
+            data: { status: 'TERSEDIA' }
+          });
+        }
       }
     }
 
@@ -609,18 +684,34 @@ export const checkAvailability = async (req: Request, res: Response): Promise<an
         return res.json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} sedang ditutup/diblokir pada rentang tanggal yang Anda pilih`, data: { available: false } });
       }
 
-      // Cek Ketersediaan Unit Fisik
-      const countPemesanan = await prisma.unitKamar.count({
+      // Cek Ketersediaan Kamar
+      const totalUnits = await prisma.unitKamar.count({
         where: {
           tipeKamarId: item.tipeKamarId,
-          status: 'TERSEDIA',
-          blokir: { none: { status: 'AKTIF', tanggalMulai: { lt: checkOutDate }, tanggalSelesai: { gt: checkInDate } } },
-          pemesanan: { none: { pemesanan: { status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] }, waktuCheckIn: { lt: checkOutDate }, waktuCheckOut: { gt: checkInDate } } } }
+          status: { in: ['TERSEDIA', 'TERISI'] },
+          blokir: { none: { status: 'AKTIF', tanggalMulai: { lt: checkOutDate }, tanggalSelesai: { gt: checkInDate } } }
         }
       });
 
-      if (countPemesanan < item.jumlahKamar) {
-        return res.json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} hanya tersisa ${countPemesanan} unit pada rentang tanggal tersebut`, data: { available: false } });
+      const overlappingBookings = await prisma.detailPemesanan.aggregate({
+        _sum: {
+          jumlahKamar: true
+        },
+        where: {
+          tipeKamarId: item.tipeKamarId,
+          pemesanan: {
+            status: { in: ['MENUNGGU_PEMBAYARAN', 'PEMBAYARAN', 'DIKONFIRMASI', 'CHECK_IN'] },
+            waktuCheckIn: { lt: checkOutDate },
+            waktuCheckOut: { gt: checkInDate }
+          }
+        }
+      });
+
+      const bookedRoomsCount = overlappingBookings._sum.jumlahKamar || 0;
+      const availableRoomsCount = totalUnits - bookedRoomsCount;
+
+      if (availableRoomsCount < item.jumlahKamar) {
+        return res.json({ status: 'error', message: `Kamar tipe ${tipeKamar.nama} pada rentang waktu yang dipilih telah penuh. Anda bisa ganti jadwal atau ubah ke tipe kamar lain yang tersedia.`, data: { available: false } });
       }
     }
 

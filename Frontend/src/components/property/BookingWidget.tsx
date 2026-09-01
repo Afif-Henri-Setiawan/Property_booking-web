@@ -11,7 +11,30 @@ interface BookingWidgetProps {
   allRooms?: any[];
 }
 
-export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidgetProps) {
+export default function BookingWidget({ 
+  propertyId, 
+  allRooms = [] 
+}: BookingWidgetProps) {
+  const [reviews, setReviews] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL as string;
+        const res = await fetch(`${apiUrl}/ulasan/properti/${propertyId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'success') {
+            setReviews(data.data);
+          }
+        }
+      } catch (err) {
+        // silently ignore error for reviews in widget
+      }
+    };
+    fetchReviews();
+  }, [propertyId]);
+
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState(1);
@@ -198,9 +221,13 @@ export default function BookingWidget({ propertyId, allRooms = [] }: BookingWidg
         <div className="flex flex-col items-end text-sm">
           <div className="flex items-center gap-1 font-medium">
             <Star size={14} className="fill-yellow-500 text-yellow-500" />
-            4.96
+            {reviews.length > 0 
+              ? (reviews.reduce((acc, curr) => acc + curr.penilaian, 0) / reviews.length).toFixed(1)
+              : "0"}
           </div>
-          <span className="text-gray-500 underline">128 ulasan</span>
+          <a href="#ulasan" className="text-gray-500 underline cursor-pointer hover:text-primary transition-colors">
+            {reviews.length} ulasan
+          </a>
         </div>
       </div>
 

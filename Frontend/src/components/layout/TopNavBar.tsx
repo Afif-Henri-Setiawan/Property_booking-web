@@ -6,7 +6,27 @@ import { PlusCircle, Home as HomeIcon, ClipboardList, LayoutDashboard } from "lu
 import CustomUserButton from "./CustomUserButton";
 
 export default async function TopNavBar() {
-  const { userId } = await auth();
+  const { userId, getToken } = await auth();
+  
+  let role = "GUEST";
+  if (userId) {
+    try {
+      const token = await getToken();
+      if (token) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status === 'success' && json.data?.role) {
+            role = json.data.role;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch user role", e);
+    }
+  }
 
   return (
     <header className="fixed top-0 w-full z-50 transition-all duration-300 shadow-sm bg-white/90 backdrop-blur-md print:hidden">
@@ -35,14 +55,24 @@ export default async function TopNavBar() {
         <div className="flex items-center gap-4">
           {userId ? (
             <>
-              <Link
-                href="/host/dashboard"
-                className="hidden lg:flex items-center gap-2 text-gray-500 hover:text-[#1E2A4F] transition-colors font-medium text-sm mr-2"
-              >
-                <PlusCircle size={20} />
-                Dashboard
-              </Link>
-              <CustomUserButton />
+              {role !== "GUEST" ? (
+                <Link
+                  href="/host/dashboard"
+                  className="hidden lg:flex items-center gap-2 text-gray-500 hover:text-[#1E2A4F] transition-colors font-medium text-sm mr-2"
+                >
+                  <LayoutDashboard size={18} />
+                  Dashboard Host
+                </Link>
+              ) : (
+                <Link
+                  href="/user/profile"
+                  className="hidden lg:flex items-center gap-2 text-gray-500 hover:text-[#1E2A4F] transition-colors font-medium text-sm mr-2"
+                >
+                  <LayoutDashboard size={18} />
+                  Dashboard
+                </Link>
+              )}
+              <CustomUserButton role={role} />
             </>
           ) : (
             <div className="flex items-center gap-4">
