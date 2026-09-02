@@ -3,6 +3,8 @@ import Link from "next/link";
 export const dynamic = 'force-dynamic';
 import TopNavBar from "@/components/layout/TopNavBar";
 import DateRangeInputs from "@/components/search/DateRangeInputs";
+import FadeIn from "@/components/animations/FadeIn";
+import StaggerContainer, { StaggerItem } from "@/components/animations/StaggerContainer";
 import {
   ArrowRight,
   MapPin,
@@ -58,6 +60,7 @@ export default async function Home() {
       <main className="pt-20">
         {/* Hero Section */}
         <section className="px-4 md:px-8 max-w-7xl mx-auto mt-4 mb-24 pt-4">
+          <FadeIn direction="up" duration={0.8}>
           <div className="relative w-full h-[600px] rounded-[2.5rem] overflow-hidden group bg-cover bg-center shadow-sm"
             style={{
               backgroundImage:
@@ -144,12 +147,13 @@ export default async function Home() {
               </form>
             </div>
           </div>
+          </FadeIn>
         </section>
 
         {/* 4 Feature Row */}
         <section id="layanan" className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StaggerItem className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
               <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                 <HomeIcon size={24} strokeWidth={2} />
               </div>
@@ -157,8 +161,8 @@ export default async function Home() {
                 <h4 className="font-bold text-sm text-[#1E2A4F]">Properti Terverifikasi</h4>
                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">Semua properti diverifikasi demi ketenangan pikiran Anda.</p>
               </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+            </StaggerItem>
+            <StaggerItem className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
               <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                 <ShieldCheck size={24} strokeWidth={2} />
               </div>
@@ -166,8 +170,8 @@ export default async function Home() {
                 <h4 className="font-bold text-sm text-[#1E2A4F]">Aman & Terlindungi</h4>
                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">Keamanan Anda adalah prioritas kami dalam setiap transaksi.</p>
               </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+            </StaggerItem>
+            <StaggerItem className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
               <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                 <Headset size={24} strokeWidth={2} />
               </div>
@@ -175,8 +179,8 @@ export default async function Home() {
                 <h4 className="font-bold text-sm text-[#1E2A4F]">Dukungan 24/7</h4>
                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">Tim kami siap membantu Anda kapanpun, dimanapun.</p>
               </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
+            </StaggerItem>
+            <StaggerItem className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[#fafafa] p-6 rounded-2xl border border-gray-100">
               <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center shrink-0">
                 <Star size={24} strokeWidth={2} />
               </div>
@@ -184,12 +188,13 @@ export default async function Home() {
                 <h4 className="font-bold text-sm text-[#1E2A4F]">Jaminan Harga Terbaik</h4>
                 <p className="text-xs text-gray-500 mt-1 leading-relaxed">Dapatkan penawaran terbaik dengan harga terbaik.</p>
               </div>
-            </div>
-          </div>
+            </StaggerItem>
+          </StaggerContainer>
         </section>
 
         {/* More Than Just A Property Section */}
         <section id="tentang-kami" className="px-4 md:px-16 max-w-7xl mx-auto mb-24">
+          <FadeIn direction="up">
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             <div className="lg:w-5/12 flex flex-col gap-6">
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Mengapa Memilih StayNest</span>
@@ -227,10 +232,12 @@ export default async function Home() {
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80')" }}></div>
             </div>
           </div>
+          </FadeIn>
         </section>
 
         {/* Explore Property Types */}
         <section id="tipe-properti" className="px-4 md:px-16 max-w-7xl mx-auto mb-20">
+          <FadeIn direction="up">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-black">Jelajahi Tipe Properti</h2>
           </div>
@@ -281,10 +288,12 @@ export default async function Home() {
               </div>
             </div>
           </div>
+          </FadeIn>
         </section>
 
         {/* Featured Properties */}
         <section id="properti-pilihan" className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
+          <FadeIn direction="up">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-2xl font-bold text-black">Properti Pilihan</h2>
             <Link href="/search" className="text-black font-semibold hover:underline flex items-center gap-1 text-sm">
@@ -352,12 +361,14 @@ export default async function Home() {
               </div>
             )}
           </div>
+          </FadeIn>
         </section>
 
 
 
         {/* Testimonials Section */}
         <section id="ulasan" className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
+          <FadeIn direction="up">
           <div className="flex justify-between items-end mb-8">
             <h2 className="text-3xl font-bold text-black">Apa Kata Klien Kami</h2>
             <div className="flex gap-4">
@@ -401,10 +412,12 @@ export default async function Home() {
               </div>
             )}
           </div>
+          </FadeIn>
         </section>
 
         {/* Newsletter CTA */}
         <section className="px-4 md:px-16 max-w-7xl mx-auto mb-32">
+          <FadeIn direction="up">
           <div className="bg-[#111827] rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-center">
             <div className="w-full md:w-1/3 h-48 md:h-auto self-stretch bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')" }}></div>
             <div className="w-full md:w-2/3 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center justify-between">
@@ -418,6 +431,7 @@ export default async function Home() {
               </form>
             </div>
           </div>
+          </FadeIn>
         </section>
       </main>
 
