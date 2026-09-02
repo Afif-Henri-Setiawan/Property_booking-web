@@ -357,8 +357,8 @@ export const getHostDashboard = async (req: AuthRequest, res: Response, next: Ne
         pemesanan: {
           propertiId: { in: propertyIds },
           status: { in: ['DIKONFIRMASI', 'CHECK_IN'] },
-          tanggalMulai: { lte: today },
-          tanggalSelesai: { gt: today }
+          waktuCheckIn: { lte: today },
+          waktuCheckOut: { gt: today }
         }
       }
     });

@@ -68,3 +68,13 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     res.status(401).json({ status: 'error', message: 'Tidak diotorisasi, token tidak valid' });
   }
 };
+
+export const authorize = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.pengguna || !roles.includes(req.pengguna.role)) {
+      logger.warn(`Akses dilarang: Peran ${req.pengguna?.role} mencoba mengakses rute ${roles.join(',')}`);
+      return res.status(403).json({ status: 'error', message: 'Anda tidak memiliki izin untuk melakukan aksi ini' });
+    }
+    next();
+  };
+};

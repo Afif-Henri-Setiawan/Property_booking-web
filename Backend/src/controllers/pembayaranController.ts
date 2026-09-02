@@ -153,8 +153,8 @@ export const webhookPembayaran = async (req: Request, res: Response, next: NextF
           nomorPemesanan: updatedPemesanan.id.split('-')[0].toUpperCase(),
           namaProperti: updatedPemesanan.properti.nama,
           totalHarga: Number(updatedPemesanan.totalHarga),
-          waktuCheckIn: updatedPemesanan.tanggalMulai.toISOString().split('T')[0],
-          waktuCheckOut: updatedPemesanan.tanggalSelesai.toISOString().split('T')[0],
+          waktuCheckIn: updatedPemesanan.waktuCheckIn.toISOString().split('T')[0],
+          waktuCheckOut: updatedPemesanan.waktuCheckOut.toISOString().split('T')[0],
           pemesananId: updatedPemesanan.id
         }).catch(err => logger.error({ err }, 'Gagal mengirim email secara asinkron di webhook'));
       }

@@ -17,6 +17,7 @@ import pemesananRoutes from './routes/pemesananRoutes';
 import pembayaranRoutes from './routes/pembayaranRoutes';
 import ulasanRoutes from './routes/ulasanRoutes';
 import ketersediaanRoutes from './routes/ketersediaanRoutes';
+import adminRoutes from './routes/adminRoutes';
 const app = express();
 
 // Middlewares
@@ -45,6 +46,7 @@ app.use('/api/v1/pemesanan', pemesananRoutes);
 app.use('/api/v1/pembayaran', pembayaranRoutes);
 app.use('/api/v1/ulasan', ulasanRoutes);
 app.use('/api/v1/ketersediaan', ketersediaanRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 // Base API Route
 app.get('/api/v1', (req: Request, res: Response) => {

@@ -65,6 +65,14 @@ export const addPropertyStaff = async (req: AuthRequest, res: Response, next: Ne
       return res.status(403).json({ status: 'error', message: 'Akses ditolak.' });
     }
 
+    // Jika ingin menambah MANAGER, pastikan yang melakukan adalah Pemilik Asli (tuanRumah)
+    if (staffRole === 'MANAGER') {
+      const properti = await prisma.properti.findUnique({ where: { id: propertiId } });
+      if (properti?.tuanRumahId !== penggunaId && peran !== 'ADMIN') {
+        return res.status(403).json({ status: 'error', message: 'Hanya Pemilik Properti asli yang dapat menambahkan staf dengan role MANAGER.' });
+      }
+    }
+
     // Cari pengguna berdasarkan email
     const targetUser = await prisma.pengguna.findUnique({
       where: { email }
@@ -112,7 +120,7 @@ export const addPropertyStaff = async (req: AuthRequest, res: Response, next: Ne
 export const removePropertyStaff = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const propertiId = req.params.propertiId as string;
-    const staffPenggunaId = req.params.staffId as string;
+    const staffId = req.params.staffId as string;
     const penggunaId = req.pengguna.id as string;
     const peran = req.pengguna.role;
 
@@ -120,8 +128,16 @@ export const removePropertyStaff = async (req: AuthRequest, res: Response, next:
       return res.status(403).json({ status: 'error', message: 'Akses ditolak.' });
     }
 
+    const staffToRemove = await prisma.propertyStaff.findUnique({
+      where: { id: staffId }
+    });
+
+    if (!staffToRemove) {
+      return res.status(404).json({ status: 'error', message: 'Staf tidak ditemukan.' });
+    }
+
     // Jangan izinkan manager menghapus dirinya sendiri jika dia adalah satu-satunya manager
-    if (staffPenggunaId === penggunaId) {
+    if (staffToRemove.penggunaId === penggunaId) {
       const managerCount = await prisma.propertyStaff.count({
         where: { propertiId, staffRole: 'MANAGER' }
       });
@@ -130,8 +146,16 @@ export const removePropertyStaff = async (req: AuthRequest, res: Response, next:
       }
     }
 
+    // Jika yang mau dihapus adalah MANAGER, pastikan yang menghapus adalah Pemilik Asli
+    if (staffToRemove.staffRole === 'MANAGER') {
+      const properti = await prisma.properti.findUnique({ where: { id: propertiId } });
+      if (properti?.tuanRumahId !== penggunaId && peran !== 'ADMIN' && staffToRemove.penggunaId !== penggunaId) {
+        return res.status(403).json({ status: 'error', message: 'Hanya Pemilik Properti asli yang dapat menghapus staf dengan role MANAGER.' });
+      }
+    }
+
     await prisma.propertyStaff.delete({
-      where: { propertiId_penggunaId: { propertiId, penggunaId: staffPenggunaId } }
+      where: { id: staffId }
     });
 
     res.json({ status: 'success', message: 'Staf berhasil dihapus' });

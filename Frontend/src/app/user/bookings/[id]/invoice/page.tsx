@@ -11,8 +11,8 @@ import { toast } from "sonner";
 interface BookingDetail {
   id: string;
   totalHarga: number;
-  tanggalMulai: string;
-  tanggalSelesai: string;
+  waktuCheckIn: string;
+  waktuCheckOut: string;
   statusPembayaran: string;
   statusPemesanan: string;
   tamu: {

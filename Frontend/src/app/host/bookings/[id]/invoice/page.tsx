@@ -11,8 +11,8 @@ import { toast } from "sonner";
 interface BookingDetail {
   id: string;
   totalHarga: number;
-  tanggalMulai: string;
-  tanggalSelesai: string;
+  waktuCheckIn: string;
+  waktuCheckOut: string;
   statusPembayaran: string;
   statusPemesanan: string;
   tamu: {
@@ -168,14 +168,14 @@ export default function HostInvoicePage({ params }: { params: Promise<{ id: stri
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Check-In</div>
                   <div className="font-semibold text-gray-900">
-                    {format(new Date(booking.waktuCheckIn), "dd MMM yyyy", { locale: idLocale })}
+                    {format(new Date(booking.waktuCheckIn), "dd MMM yyyy", { locale: localeId })}
                   </div>
                   <div className="text-sm text-gray-500">14:00</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Check-Out</div>
                   <div className="font-semibold text-gray-900">
-                    {format(new Date(booking.waktuCheckOut), "dd MMM yyyy", { locale: idLocale })}
+                    {format(new Date(booking.waktuCheckOut), "dd MMM yyyy", { locale: localeId })}
                   </div>
                   <div className="text-sm text-gray-500">12:00</div>
                 </div>
